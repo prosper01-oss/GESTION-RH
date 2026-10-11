@@ -1,8 +1,9 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+// Droits du mois écoulé, crédités le 1er de chaque mois.
+Schedule::command('omit:accrue-leave')->monthlyOn(1, '01:00')->withoutOverlapping();
+
+// Clôture de l'année écoulée : reports, péremptions et droits annuels de la nouvelle année.
+Schedule::command('omit:close-leave-year')->yearlyOn(1, 1, '02:00')->withoutOverlapping();

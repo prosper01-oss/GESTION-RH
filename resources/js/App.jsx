@@ -11,6 +11,8 @@ import DepartmentList from './pages/departments/DepartmentList';
 import EmployeeForm from './pages/employees/EmployeeForm';
 import EmployeeList from './pages/employees/EmployeeList';
 import EmployeeShow from './pages/employees/EmployeeShow';
+import LeaveTypeSettings from './pages/settings/LeaveTypeSettings';
+import PublicHolidaySettings from './pages/settings/PublicHolidaySettings';
 
 export default function App() {
     return (
@@ -35,6 +37,10 @@ export default function App() {
                     <Route element={<RequireAuth permission="employees.manage" />}>
                         <Route path="/personnel/nouveau" element={<EmployeeForm />} />
                         <Route path="/personnel/:id/modifier" element={<EmployeeForm />} />
+                    </Route>
+                    <Route element={<RequireAuth permission="leave_settings.manage" />}>
+                        <Route path="/parametres/conges" element={<LeaveTypeSettings />} />
+                        <Route path="/parametres/jours-feries" element={<PublicHolidaySettings />} />
                     </Route>
                     <Route element={<RequireAuth permission="users.manage" />}>
                         <Route path="/admin/comptes" element={<UserList />} />

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Alert from '../../components/Alert';
+import BalanceAdjustmentForm from '../../components/BalanceAdjustmentForm';
 import Button from '../../components/Button';
 import EmployeeDetails from '../../components/EmployeeDetails';
+import LeaveBalances from '../../components/LeaveBalances';
 import { useAuth } from '../../hooks/useAuth';
 import api, { errorMessage, validationErrors } from '../../services/api';
 
@@ -14,6 +16,7 @@ export default function EmployeeShow() {
     const [success, setSuccess] = useState('');
     const [busy, setBusy] = useState(false);
     const [photoVersion, setPhotoVersion] = useState('');
+    const [balancesVersion, setBalancesVersion] = useState(0);
 
     useEffect(() => {
         api.get(`/employees/${id}`)
@@ -94,6 +97,13 @@ export default function EmployeeShow() {
                         {employee.status === 'actif' ? 'Désactiver' : 'Réactiver'}
                     </Button>
                 </div>
+            )}
+            {can('leave_balances.view') && (
+                <section className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-6">
+                    <h2 className="text-sm font-semibold tracking-wide text-slate-500 uppercase">Soldes de congés</h2>
+                    <LeaveBalances url={`/leave-balances/${id}`} reloadKey={balancesVersion} />
+                    {can('leave_balances.adjust') && <BalanceAdjustmentForm employeeId={id} onSaved={() => setBalancesVersion((version) => version + 1)} />}
+                </section>
             )}
         </div>
     );

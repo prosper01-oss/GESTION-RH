@@ -23,7 +23,7 @@ class SessionControllerTest extends TestCase
         $response->assertOk()
             ->assertJsonPath('data.email', $user->email)
             ->assertJsonPath('data.roles', ['rh'])
-            ->assertJsonPath('data.permissions', ['employees.view', 'employees.manage', 'departments.manage']);
+            ->assertJsonPath('data.permissions', ['employees.view', 'employees.manage', 'departments.manage', 'leave_settings.manage', 'leave_balances.view', 'leave_balances.adjust']);
         $this->assertAuthenticatedAs($user, 'web');
         $this->assertEquals(now(), $user->fresh()->last_login_at);
         $this->assertDatabaseHas('audit_logs', ['action' => 'auth.login', 'user_id' => $user->id]);

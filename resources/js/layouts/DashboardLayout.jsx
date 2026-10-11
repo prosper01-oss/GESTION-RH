@@ -7,6 +7,8 @@ const navigation = [
     { to: '/', label: 'Tableau de bord', end: true },
     { to: '/personnel', label: 'Personnel', permission: 'employees.view' },
     { to: '/services', label: 'Services' },
+    { to: '/parametres/conges', label: 'Types de congés', permission: 'leave_settings.manage' },
+    { to: '/parametres/jours-feries', label: 'Jours fériés', permission: 'leave_settings.manage' },
     { to: '/admin/comptes', label: 'Comptes', permission: 'users.manage' },
     { to: '/admin/journal', label: "Journal d'audit", permission: 'audit_logs.view' },
 ];

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Alert from '../../components/Alert';
 import EmployeeDetails from '../../components/EmployeeDetails';
+import LeaveBalances from '../../components/LeaveBalances';
 import { useAuth } from '../../hooks/useAuth';
 import api, { errorMessage } from '../../services/api';
 
@@ -9,6 +10,8 @@ const shortcuts = [
     { to: '/personnel', label: 'Annuaire du personnel', description: 'Rechercher et consulter les fiches', permission: 'employees.view' },
     { to: '/personnel/nouveau', label: 'Nouvel employé', description: 'Créer une fiche du personnel', permission: 'employees.manage' },
     { to: '/services', label: 'Services', description: 'Liste des services et effectifs' },
+    { to: '/parametres/conges', label: 'Types de congés', description: 'Droits, décompte et report', permission: 'leave_settings.manage' },
+    { to: '/parametres/jours-feries', label: 'Jours fériés', description: 'Calendrier des jours non travaillés', permission: 'leave_settings.manage' },
     { to: '/admin/comptes', label: 'Comptes', description: 'Créer les comptes et attribuer les rôles', permission: 'users.manage' },
     { to: '/admin/journal', label: "Journal d'audit", description: 'Connexions et actions sensibles', permission: 'audit_logs.view' },
 ];
@@ -38,6 +41,13 @@ export default function Dashboard() {
                 </section>
             )}
 
+            {user.employee_id && (
+                <section className="rounded-lg border border-slate-200 bg-white p-6">
+                    <h2 className="mb-4 text-sm font-semibold tracking-wide text-slate-500 uppercase">Mes soldes de congés</h2>
+                    <LeaveBalances url="/leave-balances/me" />
+                </section>
+            )}
+
             <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {shortcuts
                     .filter((item) => !item.permission || can(item.permission))
@@ -49,7 +59,7 @@ export default function Dashboard() {
                     ))}
             </section>
 
-            <p className="text-sm text-slate-500">Les congés, permissions et billets de sortie arriveront dans les prochaines versions.</p>
+            <p className="text-sm text-slate-500">Les demandes de congé, de permission et de billet de sortie arriveront dans la prochaine version.</p>
         </div>
     );
 }
