@@ -7,6 +7,8 @@ import { useAuth } from '../../hooks/useAuth';
 import api, { errorMessage } from '../../services/api';
 
 const shortcuts = [
+    { to: '/demandes/nouvelle', label: 'Demander un congé', description: 'Saisir et envoyer une demande', employeeOnly: true },
+    { to: '/a-traiter', label: 'Demandes à traiter', description: 'Contrôle, décision et finalisation', anyPermission: ['requests.review', 'requests.decide'] },
     { to: '/personnel', label: 'Annuaire du personnel', description: 'Rechercher et consulter les fiches', permission: 'employees.view' },
     { to: '/personnel/nouveau', label: 'Nouvel employé', description: 'Créer une fiche du personnel', permission: 'employees.manage' },
     { to: '/services', label: 'Services', description: 'Liste des services et effectifs' },
@@ -50,7 +52,12 @@ export default function Dashboard() {
 
             <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {shortcuts
-                    .filter((item) => !item.permission || can(item.permission))
+                    .filter(
+                        (item) =>
+                            (!item.permission || can(item.permission)) &&
+                            (!item.anyPermission || item.anyPermission.some((permission) => can(permission))) &&
+                            (!item.employeeOnly || user.employee_id),
+                    )
                     .map((item) => (
                         <Link key={item.to} to={item.to} className="rounded-lg border border-slate-200 bg-white p-5 hover:border-sky-300 hover:shadow-sm">
                             <p className="font-medium text-sky-800">{item.label}</p>
@@ -59,7 +66,7 @@ export default function Dashboard() {
                     ))}
             </section>
 
-            <p className="text-sm text-slate-500">Les demandes de congé, de permission et de billet de sortie arriveront dans la prochaine version.</p>
+            <p className="text-sm text-slate-500">Les permissions et billets de sortie arriveront dans la prochaine version.</p>
         </div>
     );
 }

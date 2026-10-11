@@ -5,7 +5,9 @@ namespace App\Services;
 use App\Enums\AccrualRule;
 use App\Enums\BalanceEntryType;
 use App\Enums\EmployeeStatus;
+use App\Enums\RequestStatus;
 use App\Models\Employee;
+use App\Models\EmployeeRequest;
 use App\Models\LeaveBalance;
 use App\Models\LeaveBalanceEntry;
 use App\Models\LeaveType;
@@ -13,6 +15,7 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
  * Tenue du registre des soldes de congés (sections 4.3 et 8.3 du cahier des charges).
@@ -89,6 +92,138 @@ class LeaveBalanceService
                 'created_by' => $author->id,
             ]);
         });
+    }
+
+    /**
+     * Solde demandable : disponible moins les jours des autres demandes en cours d'instruction (section 4.3).
+     */
+    public function requestableDays(Employee $employee, LeaveType $leaveType, int $year, ?EmployeeRequest $except = null): float
+    {
+        $balance = LeaveBalance::query()
+            ->where(['employee_id' => $employee->id, 'leave_type_id' => $leaveType->id, 'period_year' => $year])
+            ->first();
+
+        return round($this->summary($balance)['available'] - $this->pendingDays($employee, $leaveType, $year, $except), 2);
+    }
+
+    /**
+     * Vérifie le solde demandable ; refuse (409) s'il est insuffisant.
+     */
+    public function ensureRequestable(EmployeeRequest $request): void
+    {
+        $detail = $request->leaveDetail;
+        if (! $detail->leaveType->has_balance) {
+            return;
+        }
+
+        $requestable = $this->requestableDays($request->employee, $detail->leaveType, $detail->start_date->year, $request);
+
+        if ((float) $detail->requested_days > $requestable) {
+            throw new ConflictHttpException(sprintf(
+                'Solde insuffisant : %s jour(s) demandé(s), %s jour(s) disponible(s) en tenant compte des demandes en cours.',
+                $this->formatDays((float) $detail->requested_days),
+                $this->formatDays($requestable),
+            ));
+        }
+    }
+
+    /**
+     * Réserve les jours d'un congé approuvé, après revérification du solde sous verrou (section 3.3).
+     */
+    public function reserve(EmployeeRequest $request): void
+    {
+        $detail = $request->leaveDetail;
+        if (! $detail->leaveType->has_balance) {
+            return;
+        }
+
+        DB::transaction(function () use ($request, $detail): void {
+            $balance = $this->lockedBalance($request->employee, $detail->leaveType, $detail->start_date->year);
+            $available = $this->summary($balance)['available'];
+
+            if ((float) $detail->requested_days > $available) {
+                throw new ConflictHttpException(sprintf(
+                    'Solde devenu insuffisant : %s jour(s) demandé(s), %s jour(s) disponible(s). La demande ne peut pas être approuvée.',
+                    $this->formatDays((float) $detail->requested_days),
+                    $this->formatDays($available),
+                ));
+            }
+
+            $balance->entries()->create([
+                'request_id' => $request->id,
+                'entry_type' => BalanceEntryType::Reservation,
+                'days' => -(float) $detail->requested_days,
+                'reason' => "Réservation {$request->reference}",
+            ]);
+        });
+    }
+
+    /**
+     * Libère la réservation d'un congé (annulation ou clôture).
+     */
+    public function releaseReservation(EmployeeRequest $request, string $reason): void
+    {
+        $detail = $request->leaveDetail;
+        if (! $detail->leaveType->has_balance) {
+            return;
+        }
+
+        DB::transaction(function () use ($request, $detail, $reason): void {
+            $balance = $this->lockedBalance($request->employee, $detail->leaveType, $detail->start_date->year);
+            $reserved = -(float) $balance->entries()
+                ->where('request_id', $request->id)
+                ->whereIn('entry_type', [BalanceEntryType::Reservation, BalanceEntryType::AnnulationReservation])
+                ->sum('days');
+
+            if ($reserved > 0) {
+                $balance->entries()->create([
+                    'request_id' => $request->id,
+                    'entry_type' => BalanceEntryType::AnnulationReservation,
+                    'days' => round($reserved, 2),
+                    'reason' => $reason,
+                ]);
+            }
+        });
+    }
+
+    /**
+     * Transforme la réservation en consommation définitive à la fin du congé.
+     */
+    public function consume(EmployeeRequest $request, float $days): void
+    {
+        $detail = $request->leaveDetail;
+        if (! $detail->leaveType->has_balance) {
+            return;
+        }
+
+        DB::transaction(function () use ($request, $detail, $days): void {
+            $this->releaseReservation($request, "Fin de réservation {$request->reference}");
+            $balance = $this->lockedBalance($request->employee, $detail->leaveType, $detail->start_date->year);
+
+            $balance->entries()->create([
+                'request_id' => $request->id,
+                'entry_type' => BalanceEntryType::Consommation,
+                'days' => -round($days, 2),
+                'reason' => "Congé {$request->reference}",
+            ]);
+        });
+    }
+
+    private function pendingDays(Employee $employee, LeaveType $leaveType, int $year, ?EmployeeRequest $except): float
+    {
+        return (float) EmployeeRequest::query()
+            ->join('leave_request_details', 'leave_request_details.request_id', '=', 'requests.id')
+            ->where('requests.employee_id', $employee->id)
+            ->whereIn('requests.status', RequestStatus::pending())
+            ->where('leave_request_details.leave_type_id', $leaveType->id)
+            ->whereYear('leave_request_details.start_date', $year)
+            ->when($except, fn ($query) => $query->where('requests.id', '!=', $except->id))
+            ->sum('leave_request_details.requested_days');
+    }
+
+    private function formatDays(float $days): string
+    {
+        return rtrim(rtrim(number_format($days, 2, ',', ' '), '0'), ',');
     }
 
     /**

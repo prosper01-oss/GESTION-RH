@@ -4,6 +4,7 @@ import AuthLayout from './layouts/AuthLayout';
 import DashboardLayout from './layouts/DashboardLayout';
 import AuditLogList from './pages/admin/AuditLogList';
 import UserList from './pages/admin/UserList';
+import ApprovalQueue from './pages/approvals/ApprovalQueue';
 import ChangePassword from './pages/auth/ChangePassword';
 import Login from './pages/auth/Login';
 import Dashboard from './pages/dashboard/Dashboard';
@@ -11,6 +12,9 @@ import DepartmentList from './pages/departments/DepartmentList';
 import EmployeeForm from './pages/employees/EmployeeForm';
 import EmployeeList from './pages/employees/EmployeeList';
 import EmployeeShow from './pages/employees/EmployeeShow';
+import LeaveRequestForm from './pages/leaves/LeaveRequestForm';
+import LeaveRequestList from './pages/leaves/LeaveRequestList';
+import LeaveRequestShow from './pages/leaves/LeaveRequestShow';
 import LeaveTypeSettings from './pages/settings/LeaveTypeSettings';
 import PublicHolidaySettings from './pages/settings/PublicHolidaySettings';
 
@@ -29,6 +33,11 @@ export default function App() {
                 <Route element={<DashboardLayout />}>
                     <Route index element={<Dashboard />} />
                     <Route path="/services" element={<DepartmentList />} />
+                    <Route path="/demandes" element={<LeaveRequestList />} />
+                    <Route path="/demandes/nouvelle" element={<LeaveRequestForm />} />
+                    <Route path="/demandes/:id" element={<LeaveRequestShow />} />
+                    <Route path="/demandes/:id/modifier" element={<LeaveRequestForm />} />
+                    <Route path="/a-traiter" element={<ApprovalQueue />} />
 
                     <Route element={<RequireAuth permission="employees.view" />}>
                         <Route path="/personnel" element={<EmployeeList />} />

@@ -12,6 +12,9 @@ enum PermissionName: string
     case ManageLeaveSettings = 'leave_settings.manage';
     case ViewLeaveBalances = 'leave_balances.view';
     case AdjustLeaveBalances = 'leave_balances.adjust';
+    case ReviewRequests = 'requests.review';
+    case DecideRequests = 'requests.decide';
+    case ViewMedicalAttachments = 'attachments.view_medical';
 
     public function description(): string
     {
@@ -24,6 +27,9 @@ enum PermissionName: string
             self::ManageLeaveSettings => 'Paramétrer les types de congés et les jours fériés',
             self::ViewLeaveBalances => 'Consulter les soldes de congés de tous les agents',
             self::AdjustLeaveBalances => 'Corriger un solde de congés, avec justification',
+            self::ReviewRequests => 'Contrôler les demandes (étape RH) et les finaliser',
+            self::DecideRequests => 'Décider des demandes transmises par les RH (étape Médecin-Chef)',
+            self::ViewMedicalAttachments => 'Consulter les justificatifs médicaux',
         };
     }
 }

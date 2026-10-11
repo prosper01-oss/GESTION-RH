@@ -35,10 +35,13 @@ enum RoleName: string
                 PermissionName::ManageLeaveSettings,
                 PermissionName::ViewLeaveBalances,
                 PermissionName::AdjustLeaveBalances,
+                PermissionName::ReviewRequests,
             ],
             self::MedecinChef => [
                 PermissionName::ViewEmployees,
                 PermissionName::ViewLeaveBalances,
+                PermissionName::DecideRequests,
+                PermissionName::ViewMedicalAttachments,
             ],
             self::Administrateur => [
                 PermissionName::ManageUsers,

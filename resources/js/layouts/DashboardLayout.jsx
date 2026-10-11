@@ -5,6 +5,8 @@ import { roleLabels } from '../services/labels';
 
 const navigation = [
     { to: '/', label: 'Tableau de bord', end: true },
+    { to: '/demandes', label: 'Mes demandes', employeeOnly: true },
+    { to: '/a-traiter', label: 'À traiter', anyPermission: ['requests.review', 'requests.decide'] },
     { to: '/personnel', label: 'Personnel', permission: 'employees.view' },
     { to: '/services', label: 'Services' },
     { to: '/parametres/conges', label: 'Types de congés', permission: 'leave_settings.manage' },
@@ -18,7 +20,12 @@ export default function DashboardLayout() {
     const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
 
-    const links = navigation.filter((item) => !item.permission || can(item.permission));
+    const links = navigation.filter(
+        (item) =>
+            (!item.permission || can(item.permission)) &&
+            (!item.anyPermission || item.anyPermission.some((permission) => can(permission))) &&
+            (!item.employeeOnly || user.employee_id),
+    );
 
     async function handleLogout() {
         await logout();
@@ -27,7 +34,7 @@ export default function DashboardLayout() {
 
     return (
         <div className="min-h-screen md:flex">
-            <aside className="border-b border-slate-200 bg-white md:min-h-screen md:w-60 md:border-r md:border-b-0">
+            <aside className="print:hidden border-b border-slate-200 bg-white md:min-h-screen md:w-60 md:border-r md:border-b-0">
                 <div className="flex items-center justify-between px-5 py-4">
                     <div>
                         <p className="text-xs font-semibold tracking-wide text-sky-700">OMIT</p>
@@ -60,7 +67,7 @@ export default function DashboardLayout() {
             </aside>
 
             <div className="flex-1">
-                <header className="flex flex-wrap items-center justify-end gap-4 border-b border-slate-200 bg-white px-6 py-3">
+                <header className="print:hidden flex flex-wrap items-center justify-end gap-4 border-b border-slate-200 bg-white px-6 py-3">
                     <div className="text-right">
                         <p className="text-sm font-medium">{user.name}</p>
                         <p className="text-xs text-slate-500">{user.roles.map((role) => roleLabels[role] ?? role).join(' · ')}</p>
@@ -72,7 +79,7 @@ export default function DashboardLayout() {
                         Déconnexion
                     </button>
                 </header>
-                <main className="mx-auto max-w-6xl p-4 md:p-6">
+                <main className="mx-auto max-w-6xl p-4 md:p-6 print:max-w-none print:p-0">
                     <Outlet />
                 </main>
             </div>

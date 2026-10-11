@@ -38,3 +38,13 @@ export function formatDays(value) {
 
     return `${text} j`;
 }
+
+export function formatPeriod(leave) {
+    if (!leave) {
+        return '—';
+    }
+    const start = `${formatDate(leave.start_date)}${leave.starts_afternoon ? ' (après-midi)' : ''}`;
+    const end = `${formatDate(leave.end_date)}${leave.ends_morning ? ' (matin)' : ''}`;
+
+    return leave.start_date === leave.end_date && !leave.starts_afternoon && !leave.ends_morning ? start : `du ${start} au ${end}`;
+}
