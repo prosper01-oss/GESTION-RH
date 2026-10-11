@@ -15,6 +15,7 @@ Le cahier des charges de référence est `GESTION_DE_PERSONNELS_OMIT_v2.1.md`, d
 |---|---|
 | [docs/INSTALLATION.md](docs/INSTALLATION.md) | Administrateur informatique : mise en production |
 | [docs/EXPLOITATION.md](docs/EXPLOITATION.md) | Administrateur informatique : sauvegardes, restauration, mises à jour |
+| [docs/RECETTE.md](docs/RECETTE.md) | OMIT : cahier de recette et procès-verbal |
 | [docs/guides/AGENT.md](docs/guides/AGENT.md) | Tout le personnel |
 | [docs/guides/RH.md](docs/guides/RH.md) | Ressources Humaines |
 | [docs/guides/MEDECIN-CHEF.md](docs/guides/MEDECIN-CHEF.md) | Médecin-Chef |
