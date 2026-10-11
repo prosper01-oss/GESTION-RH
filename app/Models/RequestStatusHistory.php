@@ -34,4 +34,14 @@ class RequestStatusHistory extends Model
     {
         return $this->belongsTo(User::class, 'actor_id');
     }
+
+    /**
+     * Personne remplacée, quand la décision est prise en suppléance.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function onBehalfOf(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'on_behalf_of_id');
+    }
 }

@@ -11,7 +11,7 @@ use Illuminate\Console\Command;
 use Throwable;
 
 #[Signature('omit:close-finished-requests')]
-#[Description('Clôture les congés finalisés dont la période est passée : la réservation devient consommation')]
+#[Description('Clôture les congés et permissions finalisés dont la période est passée ; pour un congé, la réservation devient consommation')]
 class CloseFinishedRequests extends Command
 {
     /**
@@ -23,7 +23,9 @@ class CloseFinishedRequests extends Command
 
         EmployeeRequest::query()
             ->where('status', RequestStatus::Finalisee)
-            ->whereHas('leaveDetail', fn ($query) => $query->whereDate('end_date', '<', now()->toDateString()))
+            ->where(fn ($query) => $query
+                ->whereHas('leaveDetail', fn ($query) => $query->whereDate('end_date', '<', now()->toDateString()))
+                ->orWhereHas('permissionDetail', fn ($query) => $query->where('end_at', '<', now())))
             ->orderBy('id')
             ->each(function (EmployeeRequest $request) use ($workflow, &$closed): void {
                 try {

@@ -67,7 +67,7 @@ class RequestWorkflow
     {
         return DB::transaction(function () use ($request, $to, $actor, $comment): EmployeeRequest {
             $request = EmployeeRequest::query()->lockForUpdate()->findOrFail($request->id);
-            $request->load('employee', 'leaveDetail.leaveType', 'attachments');
+            $request->load(['employee', 'attachments', ...EmployeeRequest::detailRelations()]);
             $from = $request->status;
 
             $rule = collect(self::TRANSITIONS)->first(fn (array $rule): bool => $rule[0] === $from && $rule[1] === $to);
@@ -76,6 +76,7 @@ class RequestWorkflow
             }
 
             $this->authorize($request, $rule[2], $to, $actor);
+            $onBehalfOf = $this->delegatorFor($rule[2], $actor);
 
             $comment = $comment !== null ? trim($comment) : null;
             if (in_array($to, self::COMMENT_REQUIRED, true) && ($comment === null || $comment === '')) {
@@ -101,6 +102,7 @@ class RequestWorkflow
                 'from_status' => $from,
                 'to_status' => $to,
                 'actor_id' => $actor?->id,
+                'on_behalf_of_id' => $onBehalfOf,
                 'comment' => $comment ?: null,
             ]);
 
@@ -140,6 +142,25 @@ class RequestWorkflow
         if (! $this->actorMatches($request, $actorType, $actor)) {
             throw new AuthorizationException("Vous n'êtes pas autorisé à effectuer cette action sur cette demande.");
         }
+
+        // Un suppléant ne décide pas des demandes de la personne qui l'a désigné (section 2.2).
+        $delegatorId = $this->delegatorFor($actorType, $actor);
+        if ($delegatorId !== null && $request->employee->user?->id === $delegatorId) {
+            throw new AuthorizationException('En tant que suppléant, vous ne pouvez pas traiter les demandes de la personne que vous remplacez.');
+        }
+    }
+
+    /**
+     * Personne remplacée lorsque l'acteur agit au titre d'une suppléance.
+     */
+    private function delegatorFor(string $actorType, ?User $actor): ?int
+    {
+        return match (true) {
+            $actor === null => null,
+            $actorType === self::REVIEWER => $actor->delegatorFor(PermissionName::ReviewRequests),
+            $actorType === self::DECIDER => $actor->delegatorFor(PermissionName::DecideRequests),
+            default => null,
+        };
     }
 
     private function actorMatches(EmployeeRequest $request, string $actorType, User $user): bool
@@ -156,10 +177,32 @@ class RequestWorkflow
      */
     private function applyRules(EmployeeRequest $request, S $from, S $to): void
     {
-        if ($request->request_type !== RequestType::Conge) {
-            return;
+        match ($request->request_type) {
+            RequestType::Conge => $this->applyLeaveRules($request, $from, $to),
+            RequestType::Permission => $to === S::Soumise ? app(PermissionRequestService::class)->checkBeforeSubmission($request) : null,
+            RequestType::Sortie => $this->applyExitPassRules($request, $to),
+        };
+    }
+
+    private function applyExitPassRules(EmployeeRequest $request, S $to): void
+    {
+        $detail = $request->exitDetail;
+
+        if ($to === S::Soumise && $detail->expected_return_at->lte($detail->departure_at)) {
+            throw ValidationException::withMessages(['expected_return_at' => "L'heure de retour prévue doit suivre l'heure de départ."]);
         }
 
+        if ($to === S::Terminee && $detail->actual_return_at === null) {
+            throw new ConflictHttpException("Enregistrez l'heure de retour pour clôturer le billet.");
+        }
+
+        if ($to === S::Annulee && $detail->actual_departure_at !== null) {
+            throw new ConflictHttpException('La sortie a déjà eu lieu : le billet ne peut plus être annulé.');
+        }
+    }
+
+    private function applyLeaveRules(EmployeeRequest $request, S $from, S $to): void
+    {
         $detail = $request->leaveDetail;
 
         match (true) {

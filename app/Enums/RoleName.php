@@ -50,4 +50,18 @@ enum RoleName: string
             ],
         };
     }
+
+    /**
+     * Droits transmis à un suppléant pendant une suppléance (section 2.2).
+     *
+     * @return list<PermissionName>
+     */
+    public function delegablePermissions(): array
+    {
+        return match ($this) {
+            self::RessourcesHumaines => [PermissionName::ReviewRequests],
+            self::MedecinChef => [PermissionName::DecideRequests, PermissionName::ViewMedicalAttachments],
+            default => [],
+        };
+    }
 }

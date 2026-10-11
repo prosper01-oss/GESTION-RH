@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\AccrualRule;
 use App\Enums\CountingMode;
 use App\Models\LeaveType;
+use App\Models\PermissionType;
 use App\Models\PublicHoliday;
 use Illuminate\Database\Seeder;
 
@@ -43,6 +44,17 @@ class LeaveSettingsSeeder extends Seeder
             }
         }
 
+        // Catégories de permission indicatives, à remplacer par celles du règlement intérieur.
+        $permissionTypes = [
+            ['name' => 'Événement familial (mariage, naissance, décès)', 'is_paid' => true, 'requires_attachment' => true, 'max_duration_hours' => 72],
+            ['name' => 'Rendez-vous médical', 'is_paid' => true, 'requires_attachment' => true, 'is_medical' => true, 'max_duration_hours' => 8],
+            ['name' => 'Convenance personnelle', 'is_paid' => false, 'max_duration_hours' => 8],
+        ];
+
+        foreach ($permissionTypes as $permissionType) {
+            PermissionType::firstOrCreate(['name' => $permissionType['name']], $permissionType);
+        }
+
         // Fêtes légales à date fixe à Madagascar (à vérifier). Les fêtes mobiles
         // (lundi de Pâques, Ascension, lundi de Pentecôte) sont à saisir chaque année.
         $holidays = [
@@ -57,7 +69,9 @@ class LeaveSettingsSeeder extends Seeder
         ];
 
         foreach ($holidays as $date => $label) {
-            PublicHoliday::firstOrCreate(['date' => $date], ['label' => $label, 'is_recurring' => true]);
+            if (! PublicHoliday::query()->whereDate('date', $date)->exists()) {
+                PublicHoliday::create(['date' => $date, 'label' => $label, 'is_recurring' => true]);
+            }
         }
     }
 }

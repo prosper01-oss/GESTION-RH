@@ -48,3 +48,51 @@ export function formatPeriod(leave) {
 
     return leave.start_date === leave.end_date && !leave.starts_afternoon && !leave.ends_morning ? start : `du ${start} au ${end}`;
 }
+
+export const requestTypeLabels = {
+    conge: 'Congé',
+    permission: 'Permission',
+    sortie: 'Billet de sortie',
+};
+
+export function formatDateTime(value) {
+    return value ? new Date(value).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+}
+
+export function formatHours(value) {
+    return `${Number(value ?? 0).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} h`;
+}
+
+/**
+ * Résumé d'une demande, quel que soit son type : intitulé, période et quantité.
+ */
+export function requestSummary(request) {
+    if (request.leave) {
+        return { title: request.leave.leave_type.name, period: formatPeriod(request.leave), quantity: formatDays(request.leave.requested_days) };
+    }
+    if (request.permission) {
+        return {
+            title: request.permission.permission_type.name,
+            period: `${formatDateTime(request.permission.start_at)} → ${formatDateTime(request.permission.end_at)}`,
+            quantity: formatHours(request.permission.duration_hours),
+        };
+    }
+    if (request.exit_pass) {
+        return {
+            title: `Sortie : ${request.exit_pass.destination}`,
+            period: `${formatDateTime(request.exit_pass.departure_at)} → ${formatDateTime(request.exit_pass.expected_return_at)}`,
+            quantity: '—',
+        };
+    }
+
+    return { title: requestTypeLabels[request.request_type], period: '—', quantity: '—' };
+}
+
+/**
+ * Chemins des formulaires de création et de modification par type de demande.
+ */
+export const requestFormPaths = {
+    conge: '/demandes/nouvelle',
+    permission: '/demandes/permission/nouvelle',
+    sortie: '/demandes/sortie/nouvelle',
+};

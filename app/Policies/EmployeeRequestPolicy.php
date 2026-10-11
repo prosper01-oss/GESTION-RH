@@ -40,7 +40,10 @@ class EmployeeRequestPolicy
         return $request->isOwnedBy($user) && $request->status === RequestStatus::Brouillon;
     }
 
-    public function interrupt(User $user, EmployeeRequest $request): bool
+    /**
+     * Gestes des RH sur une demande finalisée : interruption d'un congé, départ et retour d'une sortie.
+     */
+    public function process(User $user, EmployeeRequest $request): bool
     {
         return ! $request->isOwnedBy($user) && $user->hasPermission(PermissionName::ReviewRequests);
     }

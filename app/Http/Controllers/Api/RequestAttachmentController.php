@@ -35,7 +35,7 @@ class RequestAttachmentController extends Controller
             'mime_type' => $file->getMimeType(),
             'size' => $file->getSize(),
             // Le caractère médical est fixé par le type de congé, jamais par l'utilisateur.
-            'is_medical' => (bool) $employeeRequest->leaveDetail?->leaveType->is_medical,
+            'is_medical' => $employeeRequest->load(EmployeeRequest::detailRelations())->attachmentsAreMedical(),
             'uploaded_by' => $request->user()->id,
         ]);
 

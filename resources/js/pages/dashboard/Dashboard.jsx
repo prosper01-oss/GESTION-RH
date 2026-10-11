@@ -8,6 +8,8 @@ import api, { errorMessage } from '../../services/api';
 
 const shortcuts = [
     { to: '/demandes/nouvelle', label: 'Demander un congé', description: 'Saisir et envoyer une demande', employeeOnly: true },
+    { to: '/demandes/permission/nouvelle', label: 'Demander une permission', description: 'Absence de quelques heures ou jours', employeeOnly: true },
+    { to: '/demandes/sortie/nouvelle', label: 'Billet de sortie', description: 'Sortie pendant les heures de service', employeeOnly: true },
     { to: '/a-traiter', label: 'Demandes à traiter', description: 'Contrôle, décision et finalisation', anyPermission: ['requests.review', 'requests.decide'] },
     { to: '/personnel', label: 'Annuaire du personnel', description: 'Rechercher et consulter les fiches', permission: 'employees.view' },
     { to: '/personnel/nouveau', label: 'Nouvel employé', description: 'Créer une fiche du personnel', permission: 'employees.manage' },
@@ -66,7 +68,6 @@ export default function Dashboard() {
                     ))}
             </section>
 
-            <p className="text-sm text-slate-500">Les permissions et billets de sortie arriveront dans la prochaine version.</p>
         </div>
     );
 }

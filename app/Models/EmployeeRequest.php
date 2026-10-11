@@ -61,6 +61,40 @@ class EmployeeRequest extends Model
     }
 
     /**
+     * @return HasOne<PermissionRequestDetail, $this>
+     */
+    public function permissionDetail(): HasOne
+    {
+        return $this->hasOne(PermissionRequestDetail::class, 'request_id');
+    }
+
+    /**
+     * @return HasOne<ExitPassDetail, $this>
+     */
+    public function exitDetail(): HasOne
+    {
+        return $this->hasOne(ExitPassDetail::class, 'request_id');
+    }
+
+    /**
+     * Relations de détail à charger pour afficher une demande, quel que soit son type.
+     *
+     * @return list<string>
+     */
+    public static function detailRelations(): array
+    {
+        return ['leaveDetail.leaveType', 'permissionDetail.permissionType', 'exitDetail'];
+    }
+
+    /**
+     * Le justificatif est-il médical ? Fixé par le type de congé ou de permission.
+     */
+    public function attachmentsAreMedical(): bool
+    {
+        return (bool) ($this->leaveDetail?->leaveType->is_medical ?? $this->permissionDetail?->permissionType->is_medical ?? false);
+    }
+
+    /**
      * @return HasMany<RequestStatusHistory, $this>
      */
     public function history(): HasMany

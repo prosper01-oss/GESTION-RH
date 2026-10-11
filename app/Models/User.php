@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
@@ -22,6 +23,13 @@ class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
+
+    /**
+     * Suppléances en cours, chargées une fois par requête.
+     *
+     * @var Collection<int, Delegation>|null
+     */
+    private ?Collection $currentDelegations = null;
 
     /**
      * Get the attributes that should be cast.
@@ -60,9 +68,63 @@ class User extends Authenticatable
         return $this->roles->contains('name', $role->value);
     }
 
+    /**
+     * Permission détenue par un rôle du compte, ou reçue par une suppléance en cours.
+     */
     public function hasPermission(PermissionName $permission): bool
     {
+        return $this->hasDirectPermission($permission) || $this->delegatorFor($permission) !== null;
+    }
+
+    public function hasDirectPermission(PermissionName $permission): bool
+    {
         return $this->permissionNames()->contains($permission->value);
+    }
+
+    /**
+     * Personne remplacée dont la suppléance donne cette permission, si le compte ne la détient pas lui-même.
+     */
+    public function delegatorFor(PermissionName $permission): ?int
+    {
+        if ($this->hasDirectPermission($permission)) {
+            return null;
+        }
+
+        $this->currentDelegations ??= $this->receivedDelegations()->current()->get();
+
+        return $this->currentDelegations
+            ->first(fn (Delegation $delegation): bool => in_array($permission, $delegation->role->delegablePermissions(), true))
+            ?->delegator_id;
+    }
+
+    /**
+     * @return HasMany<Delegation, $this>
+     */
+    public function receivedDelegations(): HasMany
+    {
+        return $this->hasMany(Delegation::class, 'delegate_id');
+    }
+
+    /**
+     * @return HasMany<Delegation, $this>
+     */
+    public function givenDelegations(): HasMany
+    {
+        return $this->hasMany(Delegation::class, 'delegator_id');
+    }
+
+    /**
+     * Permissions des rôles et des suppléances en cours.
+     *
+     * @return Collection<int, string>
+     */
+    public function effectivePermissionNames(): Collection
+    {
+        $delegated = collect(PermissionName::cases())
+            ->filter(fn (PermissionName $permission): bool => $this->delegatorFor($permission) !== null)
+            ->map(fn (PermissionName $permission): string => $permission->value);
+
+        return $this->permissionNames()->merge($delegated)->unique()->values();
     }
 
     /**

@@ -5,7 +5,7 @@ import Pagination from '../../components/Pagination';
 import RequestStatusBadge from '../../components/RequestStatusBadge';
 import { useAuth } from '../../hooks/useAuth';
 import api, { errorMessage } from '../../services/api';
-import { formatDate, formatDays, formatPeriod } from '../../services/labels';
+import { formatDate, requestSummary, requestTypeLabels } from '../../services/labels';
 
 /**
  * Files de traitement : contrôle et finalisation (RH), décision (Médecin-Chef), et vue d'ensemble.
@@ -31,7 +31,7 @@ export default function ApprovalQueue() {
         setError('');
         const call =
             tab === 'all'
-                ? api.get('/leave-requests', { params: { scope: 'all', page } })
+                ? api.get('/requests', { params: { scope: 'all', page } })
                 : api.get('/approvals/pending', { params: { queue: tab, page } });
         call.then(({ data }) => {
             setRequests(data.data);
@@ -63,8 +63,8 @@ export default function ApprovalQueue() {
                         <tr>
                             <th className="px-4 py-3 font-medium">Référence</th>
                             <th className="px-4 py-3 font-medium">Agent</th>
-                            <th className="px-4 py-3 font-medium">Type et période</th>
-                            <th className="px-4 py-3 text-right font-medium">Jours</th>
+                            <th className="px-4 py-3 font-medium">Demande et période</th>
+                            <th className="px-4 py-3 text-right font-medium">Durée</th>
                             <th className="px-4 py-3 font-medium">Envoyée le</th>
                             <th className="px-4 py-3 font-medium">Statut</th>
                         </tr>
@@ -77,7 +77,10 @@ export default function ApprovalQueue() {
                                 </td>
                             </tr>
                         )}
-                        {requests.map((request) => (
+                        {requests.map((request) => {
+                            const summary = requestSummary(request);
+
+                            return (
                             <tr key={request.id} className="hover:bg-slate-50">
                                 <td className="px-4 py-3">
                                     <Link to={`/demandes/${request.id}`} className="font-mono text-xs text-sky-700 hover:underline">
@@ -91,16 +94,20 @@ export default function ApprovalQueue() {
                                     <p className="text-xs text-slate-500">{request.employee.department}</p>
                                 </td>
                                 <td className="px-4 py-3">
-                                    <p>{request.leave?.leave_type.name}</p>
-                                    <p className="text-xs text-slate-500">{formatPeriod(request.leave)}</p>
+                                    <p>
+                                        <span className="text-xs text-slate-500">{requestTypeLabels[request.request_type]} · </span>
+                                        {summary.title}
+                                    </p>
+                                    <p className="text-xs text-slate-500">{summary.period}</p>
                                 </td>
-                                <td className="px-4 py-3 text-right">{formatDays(request.leave?.requested_days)}</td>
+                                <td className="px-4 py-3 text-right whitespace-nowrap">{summary.quantity}</td>
                                 <td className="px-4 py-3 whitespace-nowrap">{formatDate(request.submitted_at)}</td>
                                 <td className="px-4 py-3">
                                     <RequestStatusBadge status={request.status} label={request.status_label} />
                                 </td>
                             </tr>
-                        ))}
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>

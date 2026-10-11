@@ -66,7 +66,7 @@ class RequestTransitionController extends Controller
 
     public function interrupt(Request $request, EmployeeRequest $employeeRequest, LeaveRequestService $leaveRequests): EmployeeRequestResource
     {
-        Gate::authorize('interrupt', $employeeRequest);
+        Gate::authorize('process', $employeeRequest);
 
         $validated = $request->validate([
             'actual_end_date' => ['required', 'date'],
@@ -75,7 +75,7 @@ class RequestTransitionController extends Controller
 
         $leaveRequests->interrupt($employeeRequest, $validated['actual_end_date'], $request->boolean('ends_morning'), $request->user());
 
-        return $this->resource($employeeRequest);
+        return EmployeeRequestResource::forDisplay($employeeRequest);
     }
 
     private function apply(EmployeeRequest $employeeRequest, RequestStatus $to, Request $request): EmployeeRequestResource
@@ -84,13 +84,6 @@ class RequestTransitionController extends Controller
 
         $this->workflow->transition($employeeRequest, $to, $request->user(), $request->input('comment'));
 
-        return $this->resource($employeeRequest);
-    }
-
-    private function resource(EmployeeRequest $employeeRequest): EmployeeRequestResource
-    {
-        return EmployeeRequestResource::make($employeeRequest->fresh()->load([
-            'employee.department', 'leaveDetail.leaveType', 'attachments', 'history.actor',
-        ]));
+        return EmployeeRequestResource::forDisplay($employeeRequest);
     }
 }

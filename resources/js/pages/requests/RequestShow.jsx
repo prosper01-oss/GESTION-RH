@@ -5,27 +5,27 @@ import Button from '../../components/Button';
 import Field from '../../components/Field';
 import RequestStatusBadge from '../../components/RequestStatusBadge';
 import api, { errorMessage, validationErrors } from '../../services/api';
-import { formatDate, formatDays, formatPeriod } from '../../services/labels';
+import { formatDate, formatDateTime, formatDays, formatHours, formatPeriod, requestSummary, requestTypeLabels } from '../../services/labels';
 
 /**
  * Action proposée pour chaque statut atteignable. Le serveur indique lesquelles sont permises
  * (available_transitions) ; il reste seul juge à l'envoi.
  */
 const actions = {
-    soumise: { label: 'Envoyer aux RH', variant: 'primary', path: (id) => `/leave-requests/${id}/submit` },
+    soumise: { label: 'Envoyer aux RH', variant: 'primary', path: (id) => `/requests/${id}/submit` },
     transmise_medecin: { label: 'Transmettre au Médecin-Chef', variant: 'primary', decision: 'transmettre' },
     approuvee: { label: 'Approuver', variant: 'primary', decision: 'approuver' },
     a_corriger: { label: 'Renvoyer à l’agent pour correction', variant: 'secondary', decision: 'a_corriger', needsComment: true },
     renvoyee_rh: { label: 'Renvoyer aux RH', variant: 'secondary', decision: 'renvoyer_rh', needsComment: true },
     refusee: { label: 'Refuser', variant: 'danger', decision: 'refuser', needsComment: true, confirm: 'Refuser définitivement cette demande ?' },
     finalisee: { label: 'Finaliser (imprimé et enregistré)', variant: 'primary', path: (id) => `/requests/${id}/finalize` },
-    terminee: { label: 'Clôturer', variant: 'secondary', path: (id) => `/requests/${id}/complete`, confirm: 'Clôturer ce congé ? Les jours seront définitivement consommés.' },
-    annulee: { label: 'Annuler la demande', variant: 'danger', path: (id) => `/leave-requests/${id}/cancel`, confirm: 'Annuler cette demande ?' },
+    terminee: { label: 'Clôturer', variant: 'secondary', path: (id) => `/requests/${id}/complete`, confirm: 'Clôturer cette demande ? Pour un congé, les jours seront définitivement consommés.' },
+    annulee: { label: 'Annuler la demande', variant: 'danger', path: (id) => `/requests/${id}/cancel`, confirm: 'Annuler cette demande ?' },
 };
 
 const printableStatuses = ['approuvee', 'finalisee', 'terminee'];
 
-export default function LeaveRequestShow() {
+export default function RequestShow() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [request, setRequest] = useState(null);
@@ -37,7 +37,7 @@ export default function LeaveRequestShow() {
     const [interruptDate, setInterruptDate] = useState('');
 
     const load = useCallback(() => {
-        api.get(`/leave-requests/${id}`)
+        api.get(`/requests/${id}`)
             .then(({ data }) => setRequest(data.data))
             .catch((err) => setError(errorMessage(err)));
     }, [id]);
@@ -85,7 +85,7 @@ export default function LeaveRequestShow() {
         setBusy(true);
         setError('');
         try {
-            await api.post(`/leave-requests/${id}/attachments`, body);
+            await api.post(`/requests/${id}/attachments`, body);
             load();
         } catch (err) {
             setError(validationErrors(err).file ?? errorMessage(err));
@@ -111,7 +111,7 @@ export default function LeaveRequestShow() {
             return;
         }
         try {
-            await api.delete(`/leave-requests/${id}`);
+            await api.delete(`/requests/${id}`);
             navigate('/demandes');
         } catch (err) {
             setError(errorMessage(err));
@@ -135,12 +135,33 @@ export default function LeaveRequestShow() {
         }
     }
 
+    async function recordExit(kind) {
+        const label = kind === 'departure' ? 'le départ' : 'le retour';
+        if (!window.confirm(`Enregistrer ${label} maintenant ?`)) {
+            return;
+        }
+        setBusy(true);
+        setError('');
+        try {
+            const { data } = await api.post(`/exit-passes/${id}/record-${kind}`);
+            setRequest(data.data);
+        } catch (err) {
+            setError(errorMessage(err));
+        } finally {
+            setBusy(false);
+        }
+    }
+
     if (!request) {
         return error ? <Alert>{error}</Alert> : <p className="text-sm text-slate-500">Chargement…</p>;
     }
 
     const leave = request.leave;
-    const transitions = request.available_transitions.filter((status) => actions[status]);
+    const permission = request.permission;
+    const exitPass = request.exit_pass;
+    const summary = requestSummary(request);
+    // Un billet de sortie se clôture par l'enregistrement du retour, pas par le bouton « Clôturer ».
+    const transitions = request.available_transitions.filter((status) => actions[status] && !(exitPass && status === 'terminee'));
 
     return (
         <div className="flex flex-col gap-4">
@@ -150,7 +171,7 @@ export default function LeaveRequestShow() {
                 </button>
                 {printableStatuses.includes(request.status) && (
                     <Button variant="secondary" onClick={() => window.print()}>
-                        Imprimer l'autorisation
+                        {exitPass ? 'Imprimer le billet' : "Imprimer l'autorisation"}
                     </Button>
                 )}
             </div>
@@ -161,7 +182,10 @@ export default function LeaveRequestShow() {
 
             <section className="rounded-lg border border-slate-200 bg-white p-6 print:hidden">
                 <div className="mb-4 flex flex-wrap items-center gap-3">
-                    <h1 className="text-xl font-semibold">{leave.leave_type.name}</h1>
+                    <h1 className="text-xl font-semibold">
+                        <span className="mr-2 text-sm font-normal text-slate-500">{requestTypeLabels[request.request_type]}</span>
+                        {summary.title}
+                    </h1>
                     <RequestStatusBadge status={request.status} label={request.status_label} />
                     <span className="font-mono text-xs text-slate-500">{request.reference ?? 'Brouillon'}</span>
                 </div>
@@ -176,21 +200,59 @@ export default function LeaveRequestShow() {
                         <dt className="text-slate-500">Service</dt>
                         <dd className="font-medium">{request.employee.department ?? '—'}</dd>
                     </div>
-                    <div>
-                        <dt className="text-slate-500">Période</dt>
-                        <dd className="font-medium">{formatPeriod(leave)}</dd>
-                    </div>
-                    <div>
-                        <dt className="text-slate-500">Jours décomptés</dt>
-                        <dd className="font-medium">
-                            {formatDays(leave.requested_days)}
-                            {leave.consumed_days !== null && leave.consumed_days !== leave.requested_days && ` (réellement pris : ${formatDays(leave.consumed_days)})`}
-                        </dd>
-                    </div>
-                    {leave.reason && (
+                    {leave && (
+                        <>
+                            <div>
+                                <dt className="text-slate-500">Période</dt>
+                                <dd className="font-medium">{formatPeriod(leave)}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-slate-500">Jours décomptés</dt>
+                                <dd className="font-medium">
+                                    {formatDays(leave.requested_days)}
+                                    {leave.consumed_days !== null && leave.consumed_days !== leave.requested_days && ` (réellement pris : ${formatDays(leave.consumed_days)})`}
+                                </dd>
+                            </div>
+                        </>
+                    )}
+                    {permission && (
+                        <>
+                            <div>
+                                <dt className="text-slate-500">Période</dt>
+                                <dd className="font-medium">{summary.period}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-slate-500">Durée</dt>
+                                <dd className="font-medium">{formatHours(permission.duration_hours)}</dd>
+                            </div>
+                        </>
+                    )}
+                    {exitPass && (
+                        <>
+                            <div>
+                                <dt className="text-slate-500">Destination</dt>
+                                <dd className="font-medium">{exitPass.destination}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-slate-500">Départ et retour prévus</dt>
+                                <dd className="font-medium">{summary.period}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-slate-500">Départ réel</dt>
+                                <dd className="font-medium">{formatDateTime(exitPass.actual_departure_at)}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-slate-500">Retour réel</dt>
+                                <dd className={`font-medium ${exitPass.is_overdue ? 'text-red-700' : ''}`}>
+                                    {exitPass.is_overdue ? 'En retard — non rentré' : formatDateTime(exitPass.actual_return_at)}
+                                </dd>
+                            </div>
+                        </>
+                    )}
+                    {(leave?.reason || permission?.reason || exitPass?.reason) && (
                         <div className="sm:col-span-2">
                             <dt className="text-slate-500">Motif</dt>
-                            <dd className="whitespace-pre-line">{leave.reason}</dd>
+                            <dd className="whitespace-pre-line">{leave?.reason || permission?.reason || exitPass?.reason}</dd>
                         </div>
                     )}
                     {request.balance && (
@@ -198,7 +260,7 @@ export default function LeaveRequestShow() {
                             <dt className="text-slate-500">Solde de l'agent ({request.balance.year})</dt>
                             <dd>
                                 Disponible : <strong>{formatDays(request.balance.available)}</strong> · Demandable, autres demandes en cours déduites :{' '}
-                                <strong className={request.balance.requestable < leave.requested_days ? 'text-red-700' : ''}>{formatDays(request.balance.requestable)}</strong>
+                                <strong className={request.balance.requestable < leave?.requested_days ? 'text-red-700' : ''}>{formatDays(request.balance.requestable)}</strong>
                             </dd>
                         </div>
                     )}
@@ -235,7 +297,7 @@ export default function LeaveRequestShow() {
                 )}
             </section>
 
-            {(transitions.length > 0 || request.can_edit || request.can_delete) && (
+            {(transitions.length > 0 || request.can_edit || request.can_delete || request.can_record_exit) && (
                 <section className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-6 print:hidden">
                     <h2 className="text-sm font-semibold tracking-wide text-slate-500 uppercase">Actions</h2>
                     {pendingAction && (
@@ -265,6 +327,16 @@ export default function LeaveRequestShow() {
                                 Annuler
                             </Button>
                         )}
+                        {request.can_record_exit && !exitPass.actual_departure_at && (
+                            <Button disabled={busy} onClick={() => recordExit('departure')}>
+                                Enregistrer le départ
+                            </Button>
+                        )}
+                        {request.can_record_exit && exitPass.actual_departure_at && !exitPass.actual_return_at && (
+                            <Button disabled={busy} onClick={() => recordExit('return')}>
+                                Enregistrer le retour
+                            </Button>
+                        )}
                         {request.can_delete && (
                             <Button variant="secondary" onClick={removeDraft}>
                                 Supprimer le brouillon
@@ -289,6 +361,7 @@ export default function LeaveRequestShow() {
                         <li key={index} className="border-l-2 border-slate-200 pl-3">
                             <p>
                                 <span className="font-medium">{entry.to_status_label}</span> — {entry.actor}
+                                {entry.on_behalf_of && <span className="text-slate-500"> (en suppléance de {entry.on_behalf_of})</span>}
                             </p>
                             <p className="text-xs text-slate-500">{new Date(entry.created_at).toLocaleString('fr-FR')}</p>
                             {entry.comment && <p className="mt-1 whitespace-pre-line text-slate-700">« {entry.comment} »</p>}
@@ -303,11 +376,36 @@ export default function LeaveRequestShow() {
 }
 
 /**
- * Autorisation de congé imprimable (EF-28), visible seulement à l'impression.
+ * Document imprimable (EF-28, EF-43) : autorisation de congé ou de permission, billet de sortie.
+ * Visible seulement à l'impression.
  */
 function PrintableAuthorization({ request }) {
-    const leave = request.leave;
     const decision = [...request.history].reverse().find((entry) => entry.to_status === 'approuvee');
+    const summary = requestSummary(request);
+    const title = { conge: 'Autorisation de congé', permission: 'Autorisation de permission', sortie: 'Billet de sortie' }[request.request_type];
+
+    const rows = [
+        ['Agent', `${request.employee.prenom} ${request.employee.nom}`],
+        ['Matricule', request.employee.matricule],
+        ['Service', request.employee.department ?? '—'],
+    ];
+    if (request.leave) {
+        rows.push(['Nature du congé', request.leave.leave_type.name], ['Période', formatPeriod(request.leave)], ['Nombre de jours', formatDays(request.leave.requested_days)]);
+    }
+    if (request.permission) {
+        rows.push(['Catégorie', request.permission.permission_type.name], ['Période', summary.period], ['Durée', formatHours(request.permission.duration_hours)]);
+    }
+    if (request.exit_pass) {
+        rows.push(
+            ['Destination', request.exit_pass.destination],
+            ['Motif', request.exit_pass.reason],
+            ['Départ prévu', formatDateTime(request.exit_pass.departure_at)],
+            ['Retour prévu', formatDateTime(request.exit_pass.expected_return_at)],
+            ['Départ réel', request.exit_pass.actual_departure_at ? formatDateTime(request.exit_pass.actual_departure_at) : '……………………'],
+            ['Retour réel', request.exit_pass.actual_return_at ? formatDateTime(request.exit_pass.actual_return_at) : '……………………'],
+        );
+    }
+    rows.push(['Approuvé par', decision ? `${decision.actor}${decision.on_behalf_of ? ` (en suppléance de ${decision.on_behalf_of})` : ''}, le ${formatDate(decision.created_at)}` : '—']);
 
     return (
         <div className="hidden text-sm text-black print:block">
@@ -315,19 +413,11 @@ function PrintableAuthorization({ request }) {
                 <p className="text-lg font-bold">OMIT</p>
                 <p>Organisation Médicale Interentreprise de Toliara</p>
             </div>
-            <h1 className="mb-1 text-center text-xl font-bold uppercase">Autorisation de congé</h1>
+            <h1 className="mb-1 text-center text-xl font-bold uppercase">{title}</h1>
             <p className="mb-8 text-center font-mono">{request.reference}</p>
             <table className="mb-10 w-full">
                 <tbody>
-                    {[
-                        ['Agent', `${request.employee.prenom} ${request.employee.nom}`],
-                        ['Matricule', request.employee.matricule],
-                        ['Service', request.employee.department ?? '—'],
-                        ['Nature du congé', leave.leave_type.name],
-                        ['Période', formatPeriod(leave)],
-                        ['Nombre de jours', formatDays(leave.requested_days)],
-                        ['Approuvé par', decision ? `${decision.actor}, le ${formatDate(decision.created_at)}` : '—'],
-                    ].map(([label, value]) => (
+                    {rows.map(([label, value]) => (
                         <tr key={label}>
                             <td className="w-48 py-1.5 align-top font-semibold">{label}</td>
                             <td className="py-1.5">{value}</td>

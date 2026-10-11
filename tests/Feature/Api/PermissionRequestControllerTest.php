@@ -1,0 +1,106 @@
+<?php
+
+namespace Tests\Feature\Api;
+
+use App\Enums\RequestStatus;
+use App\Models\EmployeeRequest;
+use App\Models\PermissionType;
+use App\Models\User;
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Tests\Concerns\CreatesLeaveRequests;
+use Tests\TestCase;
+
+class PermissionRequestControllerTest extends TestCase
+{
+    use CreatesLeaveRequests, LazilyRefreshDatabase;
+
+    public function test_duration_is_computed_in_hours_by_the_server(): void
+    {
+        $type = PermissionType::factory()->create();
+        $agent = User::factory()->forEmployee()->create();
+
+        $this->actingAs($agent)->postJson('/api/v1/permission-requests', $this->payload($type, '08:00', '11:30'))
+            ->assertCreated()
+            ->assertJsonPath('data.request_type', 'permission')
+            ->assertJsonPath('data.permission.duration_hours', 3.5)
+            ->assertJsonPath('data.permission.permission_type.id', $type->id);
+    }
+
+    public function test_full_circuit_then_automatic_closing_after_the_period(): void
+    {
+        $type = PermissionType::factory()->create();
+        $agent = User::factory()->forEmployee()->create();
+        $rh = $this->rh();
+        $id = $this->actingAs($agent)->postJson('/api/v1/permission-requests', $this->payload($type))->json('data.id');
+
+        $this->actingAs($agent)->postJson("/api/v1/requests/{$id}/submit")
+            ->assertOk()
+            ->assertJsonPath('data.reference', sprintf('OMIT-PM-%d-00001', now()->year));
+        $this->actingAs($rh)->postJson("/api/v1/requests/{$id}/decision", ['decision' => 'transmettre'])->assertOk();
+        $this->actingAs($this->medecinChef())->postJson("/api/v1/requests/{$id}/decision", ['decision' => 'approuver'])->assertOk();
+        $this->actingAs($rh)->postJson("/api/v1/requests/{$id}/finalize")->assertOk();
+        $this->travel(3)->days();
+
+        $this->artisan('omit:close-finished-requests')->assertSuccessful();
+
+        $this->assertSame(RequestStatus::Terminee, EmployeeRequest::find($id)->status);
+    }
+
+    public function test_duration_above_the_category_maximum_returns_422_on_submission(): void
+    {
+        $type = PermissionType::factory()->create(['max_duration_hours' => 4]);
+        $agent = User::factory()->forEmployee()->create();
+        $id = $this->actingAs($agent)->postJson('/api/v1/permission-requests', $this->payload($type, '08:00', '13:00'))->json('data.id');
+
+        $this->actingAs($agent)->postJson("/api/v1/requests/{$id}/submit")
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['end_at' => 'La durée dépasse le maximum autorisé pour cette catégorie (4 h).']);
+    }
+
+    public function test_medical_category_marks_attachments_as_medical_and_requires_one(): void
+    {
+        Storage::fake();
+        $type = PermissionType::factory()->create(['requires_attachment' => true, 'is_medical' => true]);
+        $agent = User::factory()->forEmployee()->create();
+        $id = $this->actingAs($agent)->postJson('/api/v1/permission-requests', $this->payload($type))->json('data.id');
+
+        $this->actingAs($agent)->postJson("/api/v1/requests/{$id}/submit")->assertUnprocessable()->assertJsonValidationErrors('attachments');
+        $this->actingAs($agent)->postJson("/api/v1/requests/{$id}/attachments", ['file' => UploadedFile::fake()->create('rdv.pdf', 50, 'application/pdf')])->assertCreated();
+
+        $this->actingAs($agent)->postJson("/api/v1/requests/{$id}/submit")->assertOk();
+        $this->assertDatabaseHas('request_attachments', ['request_id' => $id, 'is_medical' => true]);
+    }
+
+    public function test_overlapping_permission_returns_422(): void
+    {
+        $type = PermissionType::factory()->create();
+        $agent = User::factory()->forEmployee()->create();
+        $first = $this->actingAs($agent)->postJson('/api/v1/permission-requests', $this->payload($type, '08:00', '10:00'))->json('data.id');
+        $second = $this->actingAs($agent)->postJson('/api/v1/permission-requests', $this->payload($type, '09:00', '11:00'))->json('data.id');
+        $this->actingAs($agent)->postJson("/api/v1/requests/{$first}/submit")->assertOk();
+
+        $this->actingAs($agent)->postJson("/api/v1/requests/{$second}/submit")->assertUnprocessable()->assertJsonValidationErrors('start_at');
+    }
+
+    public function test_end_before_start_returns_422(): void
+    {
+        $type = PermissionType::factory()->create();
+
+        $this->actingAs(User::factory()->forEmployee()->create())
+            ->postJson('/api/v1/permission-requests', $this->payload($type, '11:00', '09:00'))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['end_at' => 'La fin doit suivre le début.']);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function payload(PermissionType $type, string $from = '08:00', string $to = '12:00'): array
+    {
+        $day = now()->addDays(2)->toDateString();
+
+        return ['permission_type_id' => $type->id, 'start_at' => "{$day} {$from}", 'end_at' => "{$day} {$to}", 'reason' => 'Démarche administrative'];
+    }
+}

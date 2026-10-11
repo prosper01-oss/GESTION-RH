@@ -24,7 +24,7 @@ enum PermissionName: string
             self::ManageDepartments => 'Créer et modifier les services',
             self::ManageUsers => 'Gérer les comptes et les rôles',
             self::ViewAuditLogs => "Consulter le journal d'audit",
-            self::ManageLeaveSettings => 'Paramétrer les types de congés et les jours fériés',
+            self::ManageLeaveSettings => 'Paramétrer les types de congés, les catégories de permission et les jours fériés',
             self::ViewLeaveBalances => 'Consulter les soldes de congés de tous les agents',
             self::AdjustLeaveBalances => 'Corriger un solde de congés, avec justification',
             self::ReviewRequests => 'Contrôler les demandes (étape RH) et les finaliser',

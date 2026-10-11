@@ -18,6 +18,16 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class EmployeeRequestResource extends JsonResource
 {
     /**
+     * Demande rechargée avec tout ce que l'écran de détail affiche.
+     */
+    public static function forDisplay(EmployeeRequest $request): self
+    {
+        return self::make($request->fresh()->load([
+            'employee.department', 'attachments', 'history.actor', 'history.onBehalfOf', ...EmployeeRequest::detailRelations(),
+        ]));
+    }
+
+    /**
      * Transform the resource into an array.
      *
      * @return array<string, mixed>
@@ -55,6 +65,26 @@ class EmployeeRequestResource extends JsonResource
                 'actual_end_date' => $detail->actual_end_date?->toDateString(),
                 'reason' => $detail->reason,
             ]),
+            'permission' => $this->when($this->relationLoaded('permissionDetail') && $this->permissionDetail !== null, fn () => [
+                'permission_type' => ['id' => $this->permissionDetail->permissionType->id, 'name' => $this->permissionDetail->permissionType->name, 'requires_attachment' => $this->permissionDetail->permissionType->requires_attachment],
+                'start_at' => $this->permissionDetail->start_at,
+                'end_at' => $this->permissionDetail->end_at,
+                'duration_hours' => (float) $this->permissionDetail->duration_hours,
+                'reason' => $this->permissionDetail->reason,
+            ]),
+            'exit_pass' => $this->when($this->relationLoaded('exitDetail') && $this->exitDetail !== null, fn () => [
+                'departure_at' => $this->exitDetail->departure_at,
+                'expected_return_at' => $this->exitDetail->expected_return_at,
+                'actual_departure_at' => $this->exitDetail->actual_departure_at,
+                'actual_return_at' => $this->exitDetail->actual_return_at,
+                'destination' => $this->exitDetail->destination,
+                'reason' => $this->exitDetail->reason,
+                'is_overdue' => $this->exitDetail->isOverdue(),
+            ]),
+            'can_record_exit' => $this->when(
+                $this->relationLoaded('exitDetail') && $this->exitDetail !== null,
+                fn () => $this->status === RequestStatus::Finalisee && ! $this->isOwnedBy($user) && $user->hasPermission(PermissionName::ReviewRequests),
+            ),
             'attachments' => $this->whenLoaded('attachments', fn () => $this->attachments->map(fn (RequestAttachment $attachment): array => [
                 'id' => $attachment->id,
                 'original_name' => $attachment->original_name,
@@ -69,13 +99,14 @@ class EmployeeRequestResource extends JsonResource
                 'to_status' => $entry->to_status,
                 'to_status_label' => $entry->to_status->label(),
                 'actor' => $entry->actor?->name ?? 'Système',
+                'on_behalf_of' => $entry->on_behalf_of_id ? $entry->onBehalfOf?->name : null,
                 'comment' => $entry->comment,
                 'created_at' => $entry->created_at,
             ])),
             'available_transitions' => app(RequestWorkflow::class)->availableTransitions($this->resource, $user),
             'can_edit' => $user->can('update', $this->resource),
             'can_delete' => $user->can('delete', $this->resource),
-            'can_interrupt' => $user->can('interrupt', $this->resource) && $this->status === RequestStatus::Finalisee && $detail?->start_date->isPast(),
+            'can_interrupt' => $user->can('process', $this->resource) && $this->status === RequestStatus::Finalisee && $detail?->start_date->isPast(),
             // Solde de l'agent, pour l'instruction par les RH et la décision du Médecin-Chef.
             'balance' => $this->when(
                 $detail !== null && $detail->leaveType->has_balance && ! $this->isOwnedBy($user)

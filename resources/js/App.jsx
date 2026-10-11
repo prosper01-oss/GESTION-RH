@@ -12,9 +12,15 @@ import DepartmentList from './pages/departments/DepartmentList';
 import EmployeeForm from './pages/employees/EmployeeForm';
 import EmployeeList from './pages/employees/EmployeeList';
 import EmployeeShow from './pages/employees/EmployeeShow';
+import DelegationList from './pages/delegations/DelegationList';
+import ExitPassFollowUp from './pages/exits/ExitPassFollowUp';
+import ExitPassForm from './pages/exits/ExitPassForm';
 import LeaveRequestForm from './pages/leaves/LeaveRequestForm';
-import LeaveRequestList from './pages/leaves/LeaveRequestList';
-import LeaveRequestShow from './pages/leaves/LeaveRequestShow';
+import PermissionRequestForm from './pages/permissions/PermissionRequestForm';
+import RequestEdit from './pages/requests/RequestEdit';
+import RequestList from './pages/requests/RequestList';
+import RequestShow from './pages/requests/RequestShow';
+import PermissionTypeSettings from './pages/settings/PermissionTypeSettings';
 import LeaveTypeSettings from './pages/settings/LeaveTypeSettings';
 import PublicHolidaySettings from './pages/settings/PublicHolidaySettings';
 
@@ -33,11 +39,17 @@ export default function App() {
                 <Route element={<DashboardLayout />}>
                     <Route index element={<Dashboard />} />
                     <Route path="/services" element={<DepartmentList />} />
-                    <Route path="/demandes" element={<LeaveRequestList />} />
+                    <Route path="/demandes" element={<RequestList />} />
                     <Route path="/demandes/nouvelle" element={<LeaveRequestForm />} />
-                    <Route path="/demandes/:id" element={<LeaveRequestShow />} />
-                    <Route path="/demandes/:id/modifier" element={<LeaveRequestForm />} />
+                    <Route path="/demandes/permission/nouvelle" element={<PermissionRequestForm />} />
+                    <Route path="/demandes/sortie/nouvelle" element={<ExitPassForm />} />
+                    <Route path="/demandes/:id" element={<RequestShow />} />
+                    <Route path="/demandes/:id/modifier" element={<RequestEdit />} />
                     <Route path="/a-traiter" element={<ApprovalQueue />} />
+                    <Route path="/suppleances" element={<DelegationList />} />
+                    <Route element={<RequireAuth permission="requests.review" />}>
+                        <Route path="/sorties" element={<ExitPassFollowUp />} />
+                    </Route>
 
                     <Route element={<RequireAuth permission="employees.view" />}>
                         <Route path="/personnel" element={<EmployeeList />} />
@@ -50,6 +62,7 @@ export default function App() {
                     <Route element={<RequireAuth permission="leave_settings.manage" />}>
                         <Route path="/parametres/conges" element={<LeaveTypeSettings />} />
                         <Route path="/parametres/jours-feries" element={<PublicHolidaySettings />} />
+                        <Route path="/parametres/permissions" element={<PermissionTypeSettings />} />
                     </Route>
                     <Route element={<RequireAuth permission="users.manage" />}>
                         <Route path="/admin/comptes" element={<UserList />} />

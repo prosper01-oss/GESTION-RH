@@ -3,15 +3,18 @@
 use App\Enums\RequestType;
 use App\Http\Controllers\Api\Admin\AuditLogController;
 use App\Http\Controllers\Api\Admin\LeaveTypeController as AdminLeaveTypeController;
+use App\Http\Controllers\Api\Admin\PermissionTypeController;
 use App\Http\Controllers\Api\Admin\PublicHolidayController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Admin\UserPasswordResetController;
 use App\Http\Controllers\Api\Admin\UserRoleController;
 use App\Http\Controllers\Api\ApprovalController;
+use App\Http\Controllers\Api\DelegationController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\EmployeeController;
 use App\Http\Controllers\Api\EmployeePhotoController;
 use App\Http\Controllers\Api\EmployeeStatusController;
+use App\Http\Controllers\Api\ExitPassController;
 use App\Http\Controllers\Api\LeaveBalanceAdjustmentController;
 use App\Http\Controllers\Api\LeaveBalanceController;
 use App\Http\Controllers\Api\LeaveDayCountController;
@@ -19,11 +22,14 @@ use App\Http\Controllers\Api\LeaveRequestController;
 use App\Http\Controllers\Api\LeaveTypeController;
 use App\Http\Controllers\Api\MeController;
 use App\Http\Controllers\Api\MyPasswordController;
+use App\Http\Controllers\Api\PermissionRequestController;
 use App\Http\Controllers\Api\RequestAttachmentController;
+use App\Http\Controllers\Api\RequestController;
 use App\Http\Controllers\Api\RequestTransitionController;
 use App\Http\Controllers\Api\SessionController;
 use App\Http\Middleware\EnsureAccountIsUsable;
 use App\Models\EmployeeRequest;
+use App\Models\PermissionType;
 use Illuminate\Support\Facades\Route;
 
 // Une demande de congé n'est accessible que par les routes des congés.
@@ -51,11 +57,36 @@ Route::middleware(['auth:sanctum', EnsureAccountIsUsable::class])->group(functio
     Route::get('/leave-days/count', [LeaveDayCountController::class, 'show'])->name('leave-days.count');
     Route::get('/leave-balances/me', [LeaveBalanceController::class, 'mine'])->name('leave-balances.mine');
     Route::get('/leave-balances/{employee}', [LeaveBalanceController::class, 'show'])->name('leave-balances.show');
-    Route::apiResource('leave-requests', LeaveRequestController::class);
+    Route::get('/requests', [RequestController::class, 'index'])->name('requests.index');
+    Route::get('/requests/{employeeRequest}', [RequestController::class, 'show'])->name('requests.show');
+    Route::post('/requests/{employeeRequest}/submit', [RequestTransitionController::class, 'submit'])->name('requests.submit');
+    Route::post('/requests/{employeeRequest}/cancel', [RequestTransitionController::class, 'cancel'])->name('requests.cancel');
+    Route::post('/requests/{employeeRequest}/attachments', [RequestAttachmentController::class, 'store'])->name('requests.attachments.store');
+    Route::delete('/requests/{employeeRequest}', [RequestController::class, 'destroy'])->name('requests.destroy');
+
+    Route::get('/leave-requests', [RequestController::class, 'index'])->defaults('type', 'conge')->name('leave-requests.index');
+    Route::apiResource('leave-requests', LeaveRequestController::class)->except(['index', 'destroy']);
+    Route::delete('/leave-requests/{employeeRequest}', [RequestController::class, 'destroy'])->name('leave-requests.destroy');
     Route::post('/leave-requests/{employeeRequest}/submit', [RequestTransitionController::class, 'submit'])->name('leave-requests.submit');
     Route::post('/leave-requests/{employeeRequest}/cancel', [RequestTransitionController::class, 'cancel'])->name('leave-requests.cancel');
     Route::post('/leave-requests/{employeeRequest}/interrupt', [RequestTransitionController::class, 'interrupt'])->name('leave-requests.interrupt');
     Route::post('/leave-requests/{employeeRequest}/attachments', [RequestAttachmentController::class, 'store'])->name('leave-requests.attachments.store');
+
+    Route::get('/permission-types', fn () => response()->json(['data' => PermissionType::query()->active()->orderBy('name')->get()]))->name('permission-types.index');
+    Route::get('/permission-requests', [RequestController::class, 'index'])->defaults('type', 'permission')->name('permission-requests.index');
+    Route::post('/permission-requests', [PermissionRequestController::class, 'store'])->name('permission-requests.store');
+    Route::put('/permission-requests/{employeeRequest}', [PermissionRequestController::class, 'update'])->name('permission-requests.update');
+
+    Route::get('/exit-passes', [RequestController::class, 'index'])->defaults('type', 'sortie')->name('exit-passes.index');
+    Route::post('/exit-passes', [ExitPassController::class, 'store'])->name('exit-passes.store');
+    Route::put('/exit-passes/{employeeRequest}', [ExitPassController::class, 'update'])->name('exit-passes.update');
+    Route::post('/exit-passes/{employeeRequest}/record-departure', [ExitPassController::class, 'recordDeparture'])->name('exit-passes.record-departure');
+    Route::post('/exit-passes/{employeeRequest}/record-return', [ExitPassController::class, 'recordReturn'])->name('exit-passes.record-return');
+
+    Route::get('/delegations', [DelegationController::class, 'index'])->name('delegations.index');
+    Route::get('/delegations/candidates', [DelegationController::class, 'candidates'])->name('delegations.candidates');
+    Route::post('/delegations', [DelegationController::class, 'store'])->name('delegations.store');
+    Route::delete('/delegations/{delegation}', [DelegationController::class, 'destroy'])->name('delegations.destroy');
 
     Route::get('/approvals/pending', [ApprovalController::class, 'pending'])->name('approvals.pending');
     Route::post('/requests/{employeeRequest}/decision', [RequestTransitionController::class, 'decide'])->name('requests.decision');
@@ -74,5 +105,6 @@ Route::middleware(['auth:sanctum', EnsureAccountIsUsable::class])->group(functio
         Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
         Route::apiResource('leave-types', AdminLeaveTypeController::class)->only(['index', 'store', 'update']);
         Route::apiResource('public-holidays', PublicHolidayController::class)->except('show');
+        Route::apiResource('permission-types', PermissionTypeController::class)->only(['index', 'store', 'update']);
     });
 });

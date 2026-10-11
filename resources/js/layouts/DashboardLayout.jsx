@@ -7,9 +7,12 @@ const navigation = [
     { to: '/', label: 'Tableau de bord', end: true },
     { to: '/demandes', label: 'Mes demandes', employeeOnly: true },
     { to: '/a-traiter', label: 'À traiter', anyPermission: ['requests.review', 'requests.decide'] },
+    { to: '/sorties', label: 'Sorties', permission: 'requests.review' },
+    { to: '/suppleances', label: 'Suppléances', anyRole: ['medecin_chef', 'rh'], orDelegate: true },
     { to: '/personnel', label: 'Personnel', permission: 'employees.view' },
     { to: '/services', label: 'Services' },
     { to: '/parametres/conges', label: 'Types de congés', permission: 'leave_settings.manage' },
+    { to: '/parametres/permissions', label: 'Catégories de permission', permission: 'leave_settings.manage' },
     { to: '/parametres/jours-feries', label: 'Jours fériés', permission: 'leave_settings.manage' },
     { to: '/admin/comptes', label: 'Comptes', permission: 'users.manage' },
     { to: '/admin/journal', label: "Journal d'audit", permission: 'audit_logs.view' },
@@ -24,7 +27,8 @@ export default function DashboardLayout() {
         (item) =>
             (!item.permission || can(item.permission)) &&
             (!item.anyPermission || item.anyPermission.some((permission) => can(permission))) &&
-            (!item.employeeOnly || user.employee_id),
+            (!item.employeeOnly || user.employee_id) &&
+            (!item.anyRole || item.anyRole.some((role) => user.roles.includes(role)) || (item.orDelegate && (can('requests.review') || can('requests.decide')))),
     );
 
     async function handleLogout() {
