@@ -1,5 +1,5 @@
 const variants = {
-    primary: 'bg-sky-700 text-white hover:bg-sky-800 disabled:bg-sky-300',
+    primary: 'bg-ink text-gold-light ring-1 ring-gold/60 hover:bg-black hover:text-white disabled:bg-stone-400 disabled:text-stone-200 disabled:ring-0',
     secondary: 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:text-slate-400',
     danger: 'bg-red-600 text-white hover:bg-red-700 disabled:bg-red-300',
 };

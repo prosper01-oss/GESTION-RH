@@ -7,7 +7,7 @@
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/main.jsx'])
     </head>
-    <body class="bg-slate-50 text-slate-900 antialiased">
+    <body class="bg-ivory text-slate-900 antialiased">
         <div id="app"></div>
     </body>
 </html>

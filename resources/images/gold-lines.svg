@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8a6516"/>
+      <stop offset="0.45" stop-color="#f3d48a"/>
+      <stop offset="0.6" stop-color="#d4a73c"/>
+      <stop offset="1" stop-color="#7a5713"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.78" cy="0.2" r="0.6">
+      <stop offset="0" stop-color="#3a2c0c" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="#070605"/>
+  <rect width="1600" height="900" fill="url(#glow)"/>
+  <g fill="none" stroke="url(#gold)" stroke-linecap="round">
+    <path d="M-50 700 C 300 520, 520 860, 860 640 S 1350 300, 1680 420" stroke-width="2.2" opacity="0.9"/>
+    <path d="M-50 730 C 310 560, 540 890, 880 670 S 1360 340, 1680 455" stroke-width="1.2" opacity="0.6"/>
+    <path d="M-50 760 C 320 600, 560 920, 900 700 S 1370 380, 1680 490" stroke-width="0.8" opacity="0.4"/>
+    <path d="M-80 180 C 260 80, 480 340, 760 230 S 1180 20, 1700 160" stroke-width="1.6" opacity="0.7"/>
+    <path d="M-80 205 C 270 110, 490 370, 770 260 S 1190 55, 1700 190" stroke-width="0.8" opacity="0.4"/>
+    <path d="M1100 -40 C 1180 200, 1020 420, 1240 620 S 1500 820, 1460 960" stroke-width="1.4" opacity="0.55"/>
+    <path d="M1130 -40 C 1210 200, 1050 420, 1270 620 S 1530 820, 1490 960" stroke-width="0.7" opacity="0.35"/>
+  </g>
+</svg>

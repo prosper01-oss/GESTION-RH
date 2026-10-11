@@ -40,15 +40,15 @@ export default function DashboardLayout() {
 
     return (
         <div className="min-h-screen md:flex">
-            <aside className="print:hidden border-b border-slate-200 bg-white md:min-h-screen md:w-60 md:border-r md:border-b-0">
+            <aside className="bg-noir-dore border-b border-gold/40 md:min-h-screen md:w-60 md:border-r md:border-b-0 print:hidden">
                 <div className="flex items-center justify-between px-5 py-4">
                     <div>
-                        <p className="text-xs font-semibold tracking-wide text-sky-700">OMIT</p>
-                        <p className="text-sm font-semibold">Gestion du personnel</p>
+                        <p className="text-or text-lg font-semibold tracking-[0.25em]">OMIT</p>
+                        <p className="text-sm text-stone-300">Gestion du personnel</p>
                     </div>
                     <button
                         type="button"
-                        className="rounded-md border border-slate-300 px-3 py-1 text-sm md:hidden"
+                        className="rounded-md border border-gold/60 px-3 py-1 text-sm text-gold-light md:hidden"
                         onClick={() => setMenuOpen((open) => !open)}
                         aria-expanded={menuOpen}
                     >
@@ -63,7 +63,7 @@ export default function DashboardLayout() {
                             end={item.end}
                             onClick={() => setMenuOpen(false)}
                             className={({ isActive }) =>
-                                `rounded-md px-3 py-2 text-sm ${isActive ? 'bg-sky-50 font-medium text-sky-800' : 'text-slate-600 hover:bg-slate-50'}`
+                                `rounded-md px-3 py-2 text-sm ${isActive ? 'border-l-2 border-gold bg-white/10 font-medium text-gold-light' : 'text-stone-300 hover:bg-white/5 hover:text-gold-light'}`
                             }
                         >
                             {item.label}
@@ -73,16 +73,16 @@ export default function DashboardLayout() {
             </aside>
 
             <div className="flex-1">
-                <header className="print:hidden flex flex-wrap items-center justify-end gap-4 border-b border-slate-200 bg-white px-6 py-3">
+                <header className="flex flex-wrap items-center justify-end gap-4 border-b border-gold/40 bg-ink px-6 py-3 text-stone-200 print:hidden">
                     <NotificationBell />
                     <div className="text-right">
-                        <p className="text-sm font-medium">{user.name}</p>
-                        <p className="text-xs text-slate-500">{user.roles.map((role) => roleLabels[role] ?? role).join(' · ')}</p>
+                        <p className="text-sm font-medium text-stone-100">{user.name}</p>
+                        <p className="text-xs text-gold">{user.roles.map((role) => roleLabels[role] ?? role).join(' · ')}</p>
                     </div>
-                    <NavLink to="/mot-de-passe" className="text-sm text-slate-600 hover:text-sky-700">
+                    <NavLink to="/mot-de-passe" className="text-sm text-stone-300 hover:text-gold-light">
                         Mot de passe
                     </NavLink>
-                    <button type="button" onClick={handleLogout} className="text-sm text-slate-600 hover:text-red-600">
+                    <button type="button" onClick={handleLogout} className="text-sm text-stone-300 hover:text-red-400">
                         Déconnexion
                     </button>
                 </header>

@@ -61,7 +61,7 @@ export default function NotificationBell() {
             <button
                 type="button"
                 onClick={() => setOpen((value) => !value)}
-                className="relative rounded-md px-2 py-1 text-sm text-slate-600 hover:bg-slate-100"
+                className="relative rounded-md px-2 py-1 text-sm text-stone-300 hover:bg-white/10 hover:text-gold-light"
                 aria-label={`Notifications${unread ? ` (${unread} non lues)` : ''}`}
                 aria-expanded={open}
             >
