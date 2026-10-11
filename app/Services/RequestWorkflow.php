@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\PermissionName;
 use App\Enums\RequestStatus as S;
 use App\Enums\RequestType;
+use App\Events\RequestTransitioned;
 use App\Models\DocumentSequence;
 use App\Models\EmployeeRequest;
 use App\Models\User;
@@ -98,13 +99,15 @@ class RequestWorkflow
             }
             $request->save();
 
-            $request->history()->create([
+            $history = $request->history()->create([
                 'from_status' => $from,
                 'to_status' => $to,
                 'actor_id' => $actor?->id,
                 'on_behalf_of_id' => $onBehalfOf,
                 'comment' => $comment ?: null,
             ]);
+
+            RequestTransitioned::dispatch($request, $from, $to, $actor?->id, $history->comment);
 
             return $request;
         });

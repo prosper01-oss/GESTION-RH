@@ -21,10 +21,12 @@ use App\Http\Controllers\Api\LeaveDayCountController;
 use App\Http\Controllers\Api\LeaveRequestController;
 use App\Http\Controllers\Api\LeaveTypeController;
 use App\Http\Controllers\Api\MeController;
+use App\Http\Controllers\Api\MyNotificationController;
 use App\Http\Controllers\Api\MyPasswordController;
 use App\Http\Controllers\Api\PermissionRequestController;
 use App\Http\Controllers\Api\RequestAttachmentController;
 use App\Http\Controllers\Api\RequestController;
+use App\Http\Controllers\Api\RequestDocumentController;
 use App\Http\Controllers\Api\RequestTransitionController;
 use App\Http\Controllers\Api\SessionController;
 use App\Http\Middleware\EnsureAccountIsUsable;
@@ -45,6 +47,11 @@ Route::middleware(['auth:sanctum', EnsureAccountIsUsable::class])->group(functio
 
     Route::get('/me', [MeController::class, 'show'])->name('me.show');
     Route::patch('/me/password', [MyPasswordController::class, 'update'])->name('me.password.update');
+    Route::get('/me/notifications', [MyNotificationController::class, 'index'])->name('me.notifications.index');
+    Route::patch('/me/notifications/{notification}/read', [MyNotificationController::class, 'markAsRead'])->name('me.notifications.read');
+    Route::post('/me/notifications/read-all', [MyNotificationController::class, 'markAllAsRead'])->name('me.notifications.read-all');
+    Route::get('/me/notification-preferences', [MyNotificationController::class, 'preferences'])->name('me.notification-preferences.show');
+    Route::put('/me/notification-preferences', [MyNotificationController::class, 'updatePreferences'])->name('me.notification-preferences.update');
 
     Route::apiResource('employees', EmployeeController::class)->except('destroy');
     Route::patch('/employees/{employee}/status', [EmployeeStatusController::class, 'update'])->name('employees.status.update');
@@ -63,6 +70,10 @@ Route::middleware(['auth:sanctum', EnsureAccountIsUsable::class])->group(functio
     Route::post('/requests/{employeeRequest}/cancel', [RequestTransitionController::class, 'cancel'])->name('requests.cancel');
     Route::post('/requests/{employeeRequest}/attachments', [RequestAttachmentController::class, 'store'])->name('requests.attachments.store');
     Route::delete('/requests/{employeeRequest}', [RequestController::class, 'destroy'])->name('requests.destroy');
+    Route::get('/requests/{employeeRequest}/pdf', [RequestDocumentController::class, 'show'])->name('requests.pdf');
+    Route::get('/leave-requests/{employeeRequest}/pdf', [RequestDocumentController::class, 'show'])->name('leave-requests.pdf');
+    Route::get('/permission-requests/{employeeRequest}/pdf', [RequestDocumentController::class, 'show'])->name('permission-requests.pdf');
+    Route::get('/exit-passes/{employeeRequest}/pdf', [RequestDocumentController::class, 'show'])->name('exit-passes.pdf');
 
     Route::get('/leave-requests', [RequestController::class, 'index'])->defaults('type', 'conge')->name('leave-requests.index');
     Route::apiResource('leave-requests', LeaveRequestController::class)->except(['index', 'destroy']);

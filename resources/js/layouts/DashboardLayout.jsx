@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import NotificationBell from '../components/NotificationBell';
 import { useAuth } from '../hooks/useAuth';
 import { roleLabels } from '../services/labels';
 
@@ -72,6 +73,7 @@ export default function DashboardLayout() {
 
             <div className="flex-1">
                 <header className="print:hidden flex flex-wrap items-center justify-end gap-4 border-b border-slate-200 bg-white px-6 py-3">
+                    <NotificationBell />
                     <div className="text-right">
                         <p className="text-sm font-medium">{user.name}</p>
                         <p className="text-xs text-slate-500">{user.roles.map((role) => roleLabels[role] ?? role).join(' · ')}</p>

@@ -17,7 +17,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password', 'employee_id', 'is_active', 'must_change_password'])]
+#[Fillable(['name', 'email', 'password', 'employee_id', 'is_active', 'must_change_password', 'notify_by_email', 'notify_by_sms'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -44,6 +44,8 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'must_change_password' => 'boolean',
+            'notify_by_email' => 'boolean',
+            'notify_by_sms' => 'boolean',
         ];
     }
 

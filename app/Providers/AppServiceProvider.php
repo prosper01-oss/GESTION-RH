@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Contracts\SmsGateway;
 use App\Enums\PermissionName;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -18,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(SmsGateway::class, fn ($app) => $app->make(config('omit.sms_gateway')));
     }
 
     /**

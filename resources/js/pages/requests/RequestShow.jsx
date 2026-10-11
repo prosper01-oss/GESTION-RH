@@ -5,7 +5,7 @@ import Button from '../../components/Button';
 import Field from '../../components/Field';
 import RequestStatusBadge from '../../components/RequestStatusBadge';
 import api, { errorMessage, validationErrors } from '../../services/api';
-import { formatDate, formatDateTime, formatDays, formatHours, formatPeriod, requestSummary, requestTypeLabels } from '../../services/labels';
+import { formatDateTime, formatDays, formatHours, formatPeriod, requestSummary, requestTypeLabels } from '../../services/labels';
 
 /**
  * Action proposée pour chaque statut atteignable. Le serveur indique lesquelles sont permises
@@ -170,9 +170,9 @@ export default function RequestShow() {
                     ← Retour
                 </button>
                 {printableStatuses.includes(request.status) && (
-                    <Button variant="secondary" onClick={() => window.print()}>
-                        {exitPass ? 'Imprimer le billet' : "Imprimer l'autorisation"}
-                    </Button>
+                    <a href={`/api/v1/requests/${id}/pdf`} className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                        {exitPass ? 'Télécharger le billet (PDF)' : "Télécharger l'autorisation (PDF)"}
+                    </a>
                 )}
             </div>
 
@@ -370,70 +370,6 @@ export default function RequestShow() {
                 </ol>
             </section>
 
-            {printableStatuses.includes(request.status) && <PrintableAuthorization request={request} />}
-        </div>
-    );
-}
-
-/**
- * Document imprimable (EF-28, EF-43) : autorisation de congé ou de permission, billet de sortie.
- * Visible seulement à l'impression.
- */
-function PrintableAuthorization({ request }) {
-    const decision = [...request.history].reverse().find((entry) => entry.to_status === 'approuvee');
-    const summary = requestSummary(request);
-    const title = { conge: 'Autorisation de congé', permission: 'Autorisation de permission', sortie: 'Billet de sortie' }[request.request_type];
-
-    const rows = [
-        ['Agent', `${request.employee.prenom} ${request.employee.nom}`],
-        ['Matricule', request.employee.matricule],
-        ['Service', request.employee.department ?? '—'],
-    ];
-    if (request.leave) {
-        rows.push(['Nature du congé', request.leave.leave_type.name], ['Période', formatPeriod(request.leave)], ['Nombre de jours', formatDays(request.leave.requested_days)]);
-    }
-    if (request.permission) {
-        rows.push(['Catégorie', request.permission.permission_type.name], ['Période', summary.period], ['Durée', formatHours(request.permission.duration_hours)]);
-    }
-    if (request.exit_pass) {
-        rows.push(
-            ['Destination', request.exit_pass.destination],
-            ['Motif', request.exit_pass.reason],
-            ['Départ prévu', formatDateTime(request.exit_pass.departure_at)],
-            ['Retour prévu', formatDateTime(request.exit_pass.expected_return_at)],
-            ['Départ réel', request.exit_pass.actual_departure_at ? formatDateTime(request.exit_pass.actual_departure_at) : '……………………'],
-            ['Retour réel', request.exit_pass.actual_return_at ? formatDateTime(request.exit_pass.actual_return_at) : '……………………'],
-        );
-    }
-    rows.push(['Approuvé par', decision ? `${decision.actor}${decision.on_behalf_of ? ` (en suppléance de ${decision.on_behalf_of})` : ''}, le ${formatDate(decision.created_at)}` : '—']);
-
-    return (
-        <div className="hidden text-sm text-black print:block">
-            <div className="mb-8 border-b-2 border-black pb-4 text-center">
-                <p className="text-lg font-bold">OMIT</p>
-                <p>Organisation Médicale Interentreprise de Toliara</p>
-            </div>
-            <h1 className="mb-1 text-center text-xl font-bold uppercase">{title}</h1>
-            <p className="mb-8 text-center font-mono">{request.reference}</p>
-            <table className="mb-10 w-full">
-                <tbody>
-                    {rows.map(([label, value]) => (
-                        <tr key={label}>
-                            <td className="w-48 py-1.5 align-top font-semibold">{label}</td>
-                            <td className="py-1.5">{value}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            <div className="grid grid-cols-3 gap-6 text-center">
-                {["L'agent", 'Les Ressources Humaines', 'Le Médecin-Chef'].map((label) => (
-                    <div key={label}>
-                        <p className="font-semibold">{label}</p>
-                        <div className="mt-16 border-t border-black pt-1 text-xs">Signature</div>
-                    </div>
-                ))}
-            </div>
-            <p className="mt-12 text-xs">Document généré le {new Date().toLocaleDateString('fr-FR')}.</p>
         </div>
     );
 }

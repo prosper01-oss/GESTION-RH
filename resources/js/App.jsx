@@ -7,6 +7,7 @@ import UserList from './pages/admin/UserList';
 import ApprovalQueue from './pages/approvals/ApprovalQueue';
 import ChangePassword from './pages/auth/ChangePassword';
 import Login from './pages/auth/Login';
+import NotificationPreferences from './pages/auth/NotificationPreferences';
 import Dashboard from './pages/dashboard/Dashboard';
 import DepartmentList from './pages/departments/DepartmentList';
 import EmployeeForm from './pages/employees/EmployeeForm';
@@ -47,6 +48,7 @@ export default function App() {
                     <Route path="/demandes/:id/modifier" element={<RequestEdit />} />
                     <Route path="/a-traiter" element={<ApprovalQueue />} />
                     <Route path="/suppleances" element={<DelegationList />} />
+                    <Route path="/preferences" element={<NotificationPreferences />} />
                     <Route element={<RequireAuth permission="requests.review" />}>
                         <Route path="/sorties" element={<ExitPassFollowUp />} />
                     </Route>

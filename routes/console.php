@@ -10,3 +10,6 @@ Schedule::command('omit:close-leave-year')->yearlyOn(1, 1, '02:00')->withoutOver
 
 // Congés finalisés dont la période est passée : consommation définitive du solde.
 Schedule::command('omit:close-finished-requests')->dailyAt('00:30')->withoutOverlapping();
+
+// Rappel des demandes en attente depuis plus de OMIT_REMINDER_DAYS jours.
+Schedule::command('omit:remind-pending-requests')->weekdays()->at('07:30')->withoutOverlapping();
