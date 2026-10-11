@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import NotificationBell from '../components/NotificationBell';
+import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../hooks/useAuth';
 import { roleLabels } from '../services/labels';
 
@@ -75,6 +76,7 @@ export default function DashboardLayout() {
 
             <div className="flex-1">
                 <header className="flex flex-wrap items-center justify-end gap-4 border-b border-gold/40 bg-ink px-6 py-3 text-stone-200 print:hidden">
+                    <ThemeToggle className="text-stone-300 hover:bg-white/10 hover:text-gold-light" />
                     <NotificationBell />
                     <div className="text-right">
                         <p className="text-sm font-medium text-stone-100">{user.name}</p>

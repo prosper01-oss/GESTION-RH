@@ -1,8 +1,10 @@
 import { Outlet } from 'react-router-dom';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function AuthLayout() {
     return (
-        <div className="bg-noir-dore flex min-h-screen items-center justify-center px-4 py-12">
+        <div className="bg-noir-dore relative flex min-h-screen items-center justify-center px-4 py-12">
+            <ThemeToggle className="absolute top-4 right-4 text-stone-300 hover:bg-white/10 hover:text-gold-light" />
             <div className="w-full max-w-sm">
                 <div className="mb-8 text-center">
                     <p className="text-or text-3xl font-semibold tracking-[0.3em]">OMIT</p>

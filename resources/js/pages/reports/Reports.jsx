@@ -204,10 +204,10 @@ export default function Reports() {
                                 <strong>{report.totals.sortie.count}</strong>
                             </p>
                             <div className="flex gap-2 text-sm">
-                                <a href={exportUrl('/reports/absences/export', 'pdf')} className="rounded-md bg-sky-700 px-3 py-2 font-medium text-white hover:bg-sky-800">
+                                <a href={exportUrl('/reports/absences/export', 'pdf')} className="rounded-md bg-ink px-3 py-2 font-medium text-gold-light ring-1 ring-gold/60 hover:bg-black hover:text-white">
                                     Exporter en PDF
                                 </a>
-                                <a href={exportUrl('/reports/absences/export', 'xlsx')} className="rounded-md bg-sky-700 px-3 py-2 font-medium text-white hover:bg-sky-800">
+                                <a href={exportUrl('/reports/absences/export', 'xlsx')} className="rounded-md bg-ink px-3 py-2 font-medium text-gold-light ring-1 ring-gold/60 hover:bg-black hover:text-white">
                                     Exporter en Excel
                                 </a>
                             </div>

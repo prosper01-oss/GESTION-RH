@@ -31,7 +31,7 @@ export default function RequestList() {
                 <h1 className="text-xl font-semibold">Mes demandes</h1>
                 <div className="flex flex-wrap gap-2">
                     {Object.entries(requestFormPaths).map(([key, path]) => (
-                        <Link key={key} to={path} className="rounded-md bg-sky-700 px-3 py-2 text-sm font-medium text-white hover:bg-sky-800">
+                        <Link key={key} to={path} className="rounded-md bg-ink px-3 py-2 text-sm font-medium text-gold-light ring-1 ring-gold/60 hover:bg-black hover:text-white">
                             + {requestTypeLabels[key]}
                         </Link>
                     ))}

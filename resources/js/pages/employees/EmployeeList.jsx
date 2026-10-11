@@ -68,7 +68,7 @@ export default function EmployeeList() {
                         <Link to="/personnel/import" className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
                             Importer
                         </Link>
-                        <Link to="/personnel/nouveau" className="rounded-md bg-sky-700 px-4 py-2 text-sm font-medium text-white hover:bg-sky-800">
+                        <Link to="/personnel/nouveau" className="rounded-md bg-ink px-4 py-2 text-sm font-medium text-gold-light ring-1 ring-gold/60 hover:bg-black hover:text-white">
                             Nouvel employé
                         </Link>
                     </div>

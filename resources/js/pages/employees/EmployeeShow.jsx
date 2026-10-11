@@ -86,7 +86,7 @@ export default function EmployeeShow() {
             </section>
             {can('employees.manage') && (
                 <div className="flex flex-wrap gap-3">
-                    <Link to={`/personnel/${id}/modifier`} className="rounded-md bg-sky-700 px-4 py-2 text-sm font-medium text-white hover:bg-sky-800">
+                    <Link to={`/personnel/${id}/modifier`} className="rounded-md bg-ink px-4 py-2 text-sm font-medium text-gold-light ring-1 ring-gold/60 hover:bg-black hover:text-white">
                         Modifier
                     </Link>
                     <label className={`cursor-pointer rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 ${busy ? 'pointer-events-none opacity-50' : ''}`}>

@@ -29,10 +29,76 @@
     --color-ivory: #faf7ef;
 }
 
+/* Le mode sombre suit la classe « dark » posée sur <html> (voir resources/views/app.blade.php). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Mode sombre : les couleurs de l'interface étant des variables du thème, il suffit de les
+ * redéfinir. Les gris (slate) s'inversent en tons chauds, les teintes d'état deviennent
+ * des fonds sombres et des textes clairs, l'or s'éclaircit pour rester lisible sur le noir.
+ */
+:root.dark {
+    color-scheme: dark;
+
+    --color-ivory: #0c0b08;
+    --color-surface: #16140f;
+
+    --color-slate-50: #1d1a14;
+    --color-slate-100: #26221a;
+    --color-slate-200: #332e24;
+    --color-slate-300: #4a4336;
+    --color-slate-400: #7d7464;
+    --color-slate-500: #a69d8b;
+    --color-slate-600: #c2b9a6;
+    --color-slate-700: #d9d1c0;
+    --color-slate-800: #ebe4d4;
+    --color-slate-900: #f6f1e6;
+
+    --color-sky-50: #241d0f;
+    --color-sky-100: #3a2e12;
+    --color-sky-200: #5f4512;
+    --color-sky-300: #9c7421;
+    --color-sky-700: #dcbd68;
+    --color-sky-800: #ead7a0;
+    --color-sky-900: #f5ecd0;
+
+    --color-red-50: #2a1414;
+    --color-red-200: #5c2424;
+    --color-red-400: #b45454;
+    --color-red-700: #f19a9a;
+    --color-red-800: #f6b8b8;
+
+    --color-emerald-50: #10241a;
+    --color-emerald-100: #133022;
+    --color-emerald-200: #1f4a33;
+    --color-emerald-700: #7ddcb1;
+    --color-emerald-800: #a7efcd;
+
+    --color-amber-50: #261d0d;
+    --color-amber-200: #4d3a14;
+    --color-amber-300: #6b5119;
+    --color-amber-700: #f2c75c;
+    --color-amber-800: #f6d889;
+    --color-amber-900: #faeac0;
+
+    --color-indigo-50: #1a1d33;
+    --color-indigo-700: #aab6fb;
+    --color-rose-50: #2c1520;
+    --color-rose-700: #f7a8b8;
+}
+
 @layer base {
     body {
         background-color: var(--color-ivory);
     }
+}
+
+/*
+ * Hors couche, pour primer sur la classe utilitaire : les cartes « bg-white » prennent
+ * la surface sombre (la couleur blanche elle-même reste blanche pour text-white).
+ */
+:root.dark .bg-white {
+    background-color: var(--color-surface);
 }
 
 @layer components {
