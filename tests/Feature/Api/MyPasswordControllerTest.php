@@ -71,6 +71,19 @@ class MyPasswordControllerTest extends TestCase
             'password_confirmation' => 'seulementdeslettres',
         ]);
 
-        $response->assertUnprocessable()->assertJsonValidationErrors('password');
+        $response->assertUnprocessable()->assertJsonValidationErrors(['password' => 'Le champ mot de passe doit contenir au moins un chiffre.']);
+    }
+
+    public function test_password_identical_to_the_current_one_returns_a_french_message(): void
+    {
+        $user = User::factory()->create(['password' => 'actuel-123']);
+
+        $response = $this->actingAs($user)->patchJson('/api/v1/me/password', [
+            'current_password' => 'actuel-123',
+            'password' => 'actuel-123',
+            'password_confirmation' => 'actuel-123',
+        ]);
+
+        $response->assertUnprocessable()->assertJsonValidationErrors(['password' => "Le nouveau mot de passe doit être différent de l'actuel."]);
     }
 }
