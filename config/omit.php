@@ -44,8 +44,8 @@ return [
     */
 
     'backup' => [
-        'path' => env('OMIT_BACKUP_PATH', storage_path('app/backups')),
-        'copy_path' => env('OMIT_BACKUP_COPY_PATH'),
+        'path' => env('OMIT_BACKUP_PATH') ?: storage_path('app/backups'),
+        'copy_path' => env('OMIT_BACKUP_COPY_PATH') ?: null,
         'retention_days' => max(30, (int) env('OMIT_BACKUP_RETENTION_DAYS', 30)),
     ],
 

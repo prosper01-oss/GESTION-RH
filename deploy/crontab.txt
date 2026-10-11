@@ -1,0 +1,3 @@
+# Planificateur de l'application : acquisition des congés, clôtures, rappels, sauvegarde quotidienne.
+# À installer pour l'utilisateur du serveur web : sudo crontab -u www-data deploy/crontab.txt
+* * * * * cd /var/www/omit-gestion-personnel && php artisan schedule:run >> /dev/null 2>&1

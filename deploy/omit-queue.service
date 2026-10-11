@@ -1,0 +1,18 @@
+# Service de file d'attente : envoie les emails et les SMS, et les réessaie après une coupure d'Internet.
+# À copier dans /etc/systemd/system/omit-queue.service, puis :
+#   sudo systemctl daemon-reload && sudo systemctl enable --now omit-queue
+
+[Unit]
+Description=OMIT Gestion du personnel - file d'attente (emails, SMS)
+After=network.target mysql.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/omit-gestion-personnel
+ExecStart=/usr/bin/php artisan queue:work --sleep=3 --tries=0 --max-time=3600
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
