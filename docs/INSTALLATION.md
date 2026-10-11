@@ -4,6 +4,14 @@ Ce guide installe l'application de gestion du personnel de l'OMIT sur le serveur
 
 Les exemples utilisent `/var/www/omit-gestion-personnel` comme dossier et `rh.omit.local` comme adresse. Remplacez-les par vos valeurs.
 
+> **À exécuter uniquement sur le serveur de production, dans une copie neuve du code.** Ne lancez pas ces commandes dans le dossier de développement :
+>
+> - `cp .env.example .env` écrase la configuration existante, dont la clé de l'application et le mot de passe de la base ;
+> - `composer install --no-dev` retire les outils de test ;
+> - `chown www-data` empêche le développeur d'écrire dans `storage/`.
+>
+> Sur un poste de développement, suivez la section « Développement » du [README](../README.md).
+
 ## 1. Prérequis
 
 | Élément | Version | Remarque |
