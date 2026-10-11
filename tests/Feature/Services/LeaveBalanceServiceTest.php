@@ -148,6 +148,18 @@ class LeaveBalanceServiceTest extends TestCase
         ], $summary);
     }
 
+    public function test_summary_never_returns_negative_zero(): void
+    {
+        $leaveType = LeaveType::factory()->withPolicy()->create();
+        $employee = Employee::factory()->create();
+        $balance = LeaveBalance::create(['employee_id' => $employee->id, 'leave_type_id' => $leaveType->id, 'period_year' => 2026]);
+        $balance->entries()->create(['entry_type' => BalanceEntryType::Correction, 'days' => 10]);
+
+        $summary = $this->service()->summary($balance);
+
+        $this->assertSame('{"acquired":0.0,"carried_over":0.0,"consumed":0.0,"reserved":0.0,"adjusted":10.0,"expired":0.0,"available":10.0}', json_encode($summary, JSON_PRESERVE_ZERO_FRACTION));
+    }
+
     private function service(): LeaveBalanceService
     {
         return app(LeaveBalanceService::class);

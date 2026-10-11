@@ -45,14 +45,15 @@ class LeaveBalanceService
             2,
         );
 
+        // « + 0.0 » transforme le zéro négatif (-0.0) en zéro, pour ne jamais afficher « -0 j ».
         return [
-            'acquired' => $sum(BalanceEntryType::Acquisition),
-            'carried_over' => $sum(BalanceEntryType::Report),
-            'consumed' => -$sum(BalanceEntryType::Consommation),
-            'reserved' => -$sum(BalanceEntryType::Reservation, BalanceEntryType::AnnulationReservation),
-            'adjusted' => $sum(BalanceEntryType::Correction),
-            'expired' => -$sum(BalanceEntryType::Peremption),
-            'available' => round($totals->sum(), 2),
+            'acquired' => $sum(BalanceEntryType::Acquisition) + 0.0,
+            'carried_over' => $sum(BalanceEntryType::Report) + 0.0,
+            'consumed' => -$sum(BalanceEntryType::Consommation) + 0.0,
+            'reserved' => -$sum(BalanceEntryType::Reservation, BalanceEntryType::AnnulationReservation) + 0.0,
+            'adjusted' => $sum(BalanceEntryType::Correction) + 0.0,
+            'expired' => -$sum(BalanceEntryType::Peremption) + 0.0,
+            'available' => round($totals->sum(), 2) + 0.0,
         ];
     }
 
