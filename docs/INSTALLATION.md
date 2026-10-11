@@ -55,7 +55,7 @@ Dans `.env`, renseignez au minimum :
 | `APP_TIMEZONE` | `Indian/Antananarivo` |
 | `DB_CONNECTION` | `mysql` |
 | `DB_DATABASE`, `DB_USERNAME` | `omit_gestion_personnel`, `omit_app` |
-| `DB_PASSWORD` | mot de passe long et aléatoire (`openssl rand -base64 24`) |
+| `DB_PASSWORD` | entre guillemets, 20 caractères ou plus, avec majuscules, minuscules, chiffres et au moins un caractère spécial parmi `-_.!@%*` (politique de mots de passe de MySQL) |
 | `SESSION_LIFETIME` | durée d'inactivité avant déconnexion, en minutes (30 par défaut) |
 | `SESSION_SECURE_COOKIE` | `true` |
 | `SANCTUM_STATEFUL_DOMAINS` | `rh.omit.local` |
