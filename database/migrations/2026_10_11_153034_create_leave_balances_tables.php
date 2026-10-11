@@ -33,7 +33,7 @@ return new class extends Migration
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('created_at')->useCurrent();
 
-            $table->unique(['leave_balance_id', 'entry_type', 'reference_period']);
+            $table->unique(['leave_balance_id', 'entry_type', 'reference_period'], 'balance_entries_period_unique');
         });
     }
 
