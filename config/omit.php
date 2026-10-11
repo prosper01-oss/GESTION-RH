@@ -31,4 +31,22 @@ return [
 
     'sms_gateway' => env('OMIT_SMS_GATEWAY', LogSmsGateway::class),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Sauvegardes
+    |--------------------------------------------------------------------------
+    |
+    | path : dossier des archives sur le serveur.
+    | copy_path : second support (disque externe, partage réseau) où chaque
+    | archive est copiée ; vide pour désactiver. retention_days : durée de
+    | conservation, au moins 30 jours (section 5 du cahier des charges).
+    |
+    */
+
+    'backup' => [
+        'path' => env('OMIT_BACKUP_PATH', storage_path('app/backups')),
+        'copy_path' => env('OMIT_BACKUP_COPY_PATH'),
+        'retention_days' => max(30, (int) env('OMIT_BACKUP_RETENTION_DAYS', 30)),
+    ],
+
 ];

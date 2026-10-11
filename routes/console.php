@@ -13,3 +13,6 @@ Schedule::command('omit:close-finished-requests')->dailyAt('00:30')->withoutOver
 
 // Rappel des demandes en attente depuis plus de OMIT_REMINDER_DAYS jours.
 Schedule::command('omit:remind-pending-requests')->weekdays()->at('07:30')->withoutOverlapping();
+
+// Sauvegarde quotidienne de la base et des fichiers privés (section 5).
+Schedule::command('omit:backup')->dailyAt('23:30')->withoutOverlapping();

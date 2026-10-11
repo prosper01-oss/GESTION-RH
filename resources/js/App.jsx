@@ -3,6 +3,7 @@ import RequireAuth from './components/RequireAuth';
 import AuthLayout from './layouts/AuthLayout';
 import DashboardLayout from './layouts/DashboardLayout';
 import AuditLogList from './pages/admin/AuditLogList';
+import BackupList from './pages/admin/BackupList';
 import UserList from './pages/admin/UserList';
 import ApprovalQueue from './pages/approvals/ApprovalQueue';
 import ChangePassword from './pages/auth/ChangePassword';
@@ -72,6 +73,9 @@ export default function App() {
                     </Route>
                     <Route element={<RequireAuth permission="users.manage" />}>
                         <Route path="/admin/comptes" element={<UserList />} />
+                    </Route>
+                    <Route element={<RequireAuth permission="backups.manage" />}>
+                        <Route path="/admin/sauvegardes" element={<BackupList />} />
                     </Route>
                     <Route element={<RequireAuth permission="audit_logs.view" />}>
                         <Route path="/admin/journal" element={<AuditLogList />} />

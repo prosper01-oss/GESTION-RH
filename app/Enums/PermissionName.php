@@ -16,6 +16,7 @@ enum PermissionName: string
     case DecideRequests = 'requests.decide';
     case ViewMedicalAttachments = 'attachments.view_medical';
     case ViewReports = 'reports.view';
+    case ManageBackups = 'backups.manage';
 
     public function description(): string
     {
@@ -32,6 +33,7 @@ enum PermissionName: string
             self::DecideRequests => 'Décider des demandes transmises par les RH (étape Médecin-Chef)',
             self::ViewMedicalAttachments => 'Consulter les justificatifs médicaux',
             self::ViewReports => 'Consulter le tableau de bord RH et exporter les rapports',
+            self::ManageBackups => "Consulter l'état des sauvegardes et en lancer une",
         };
     }
 }

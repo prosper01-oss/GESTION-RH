@@ -2,6 +2,7 @@
 
 use App\Enums\RequestType;
 use App\Http\Controllers\Api\Admin\AuditLogController;
+use App\Http\Controllers\Api\Admin\BackupController;
 use App\Http\Controllers\Api\Admin\LeaveTypeController as AdminLeaveTypeController;
 use App\Http\Controllers\Api\Admin\PermissionTypeController;
 use App\Http\Controllers\Api\Admin\PublicHolidayController;
@@ -123,5 +124,7 @@ Route::middleware(['auth:sanctum', EnsureAccountIsUsable::class])->group(functio
         Route::apiResource('leave-types', AdminLeaveTypeController::class)->only(['index', 'store', 'update']);
         Route::apiResource('public-holidays', PublicHolidayController::class)->except('show');
         Route::apiResource('permission-types', PermissionTypeController::class)->only(['index', 'store', 'update']);
+        Route::get('/backups', [BackupController::class, 'index'])->name('backups.index');
+        Route::post('/backups', [BackupController::class, 'store'])->middleware('throttle:3,10')->name('backups.store');
     });
 });

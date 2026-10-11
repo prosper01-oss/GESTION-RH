@@ -18,6 +18,7 @@ const navigation = [
     { to: '/parametres/jours-feries', label: 'Jours fériés', permission: 'leave_settings.manage' },
     { to: '/admin/comptes', label: 'Comptes', permission: 'users.manage' },
     { to: '/admin/journal', label: "Journal d'audit", permission: 'audit_logs.view' },
+    { to: '/admin/sauvegardes', label: 'Sauvegardes', permission: 'backups.manage' },
 ];
 
 export default function DashboardLayout() {

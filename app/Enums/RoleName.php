@@ -49,6 +49,7 @@ enum RoleName: string
                 PermissionName::ManageUsers,
                 PermissionName::ViewAuditLogs,
                 PermissionName::ManageLeaveSettings,
+                PermissionName::ManageBackups,
             ],
         };
     }
