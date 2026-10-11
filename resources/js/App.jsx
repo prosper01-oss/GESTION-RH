@@ -21,6 +21,7 @@ import PermissionRequestForm from './pages/permissions/PermissionRequestForm';
 import RequestEdit from './pages/requests/RequestEdit';
 import RequestList from './pages/requests/RequestList';
 import RequestShow from './pages/requests/RequestShow';
+import Reports from './pages/reports/Reports';
 import PermissionTypeSettings from './pages/settings/PermissionTypeSettings';
 import LeaveTypeSettings from './pages/settings/LeaveTypeSettings';
 import PublicHolidaySettings from './pages/settings/PublicHolidaySettings';
@@ -51,6 +52,9 @@ export default function App() {
                     <Route path="/preferences" element={<NotificationPreferences />} />
                     <Route element={<RequireAuth permission="requests.review" />}>
                         <Route path="/sorties" element={<ExitPassFollowUp />} />
+                    </Route>
+                    <Route element={<RequireAuth permission="reports.view" />}>
+                        <Route path="/rapports" element={<Reports />} />
                     </Route>
 
                     <Route element={<RequireAuth permission="employees.view" />}>

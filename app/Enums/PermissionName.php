@@ -15,6 +15,7 @@ enum PermissionName: string
     case ReviewRequests = 'requests.review';
     case DecideRequests = 'requests.decide';
     case ViewMedicalAttachments = 'attachments.view_medical';
+    case ViewReports = 'reports.view';
 
     public function description(): string
     {
@@ -30,6 +31,7 @@ enum PermissionName: string
             self::ReviewRequests => 'Contrôler les demandes (étape RH) et les finaliser',
             self::DecideRequests => 'Décider des demandes transmises par les RH (étape Médecin-Chef)',
             self::ViewMedicalAttachments => 'Consulter les justificatifs médicaux',
+            self::ViewReports => 'Consulter le tableau de bord RH et exporter les rapports',
         };
     }
 }

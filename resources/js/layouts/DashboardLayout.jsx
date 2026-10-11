@@ -9,6 +9,7 @@ const navigation = [
     { to: '/demandes', label: 'Mes demandes', employeeOnly: true },
     { to: '/a-traiter', label: 'À traiter', anyPermission: ['requests.review', 'requests.decide'] },
     { to: '/sorties', label: 'Sorties', permission: 'requests.review' },
+    { to: '/rapports', label: 'Tableau de bord RH', permission: 'reports.view' },
     { to: '/suppleances', label: 'Suppléances', anyRole: ['medecin_chef', 'rh'], orDelegate: true },
     { to: '/personnel', label: 'Personnel', permission: 'employees.view' },
     { to: '/services', label: 'Services' },

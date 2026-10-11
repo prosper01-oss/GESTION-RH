@@ -36,12 +36,14 @@ enum RoleName: string
                 PermissionName::ViewLeaveBalances,
                 PermissionName::AdjustLeaveBalances,
                 PermissionName::ReviewRequests,
+                PermissionName::ViewReports,
             ],
             self::MedecinChef => [
                 PermissionName::ViewEmployees,
                 PermissionName::ViewLeaveBalances,
                 PermissionName::DecideRequests,
                 PermissionName::ViewMedicalAttachments,
+                PermissionName::ViewReports,
             ],
             self::Administrateur => [
                 PermissionName::ManageUsers,

@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\MeController;
 use App\Http\Controllers\Api\MyNotificationController;
 use App\Http\Controllers\Api\MyPasswordController;
 use App\Http\Controllers\Api\PermissionRequestController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\RequestAttachmentController;
 use App\Http\Controllers\Api\RequestController;
 use App\Http\Controllers\Api\RequestDocumentController;
@@ -98,6 +99,11 @@ Route::middleware(['auth:sanctum', EnsureAccountIsUsable::class])->group(functio
     Route::get('/delegations/candidates', [DelegationController::class, 'candidates'])->name('delegations.candidates');
     Route::post('/delegations', [DelegationController::class, 'store'])->name('delegations.store');
     Route::delete('/delegations/{delegation}', [DelegationController::class, 'destroy'])->name('delegations.destroy');
+
+    Route::get('/reports/dashboard', [ReportController::class, 'dashboard'])->name('reports.dashboard');
+    Route::get('/reports/absences', [ReportController::class, 'absences'])->name('reports.absences');
+    Route::get('/reports/absences/export', [ReportController::class, 'exportAbsences'])->name('reports.absences.export');
+    Route::get('/reports/staff/export', [ReportController::class, 'exportStaff'])->name('reports.staff.export');
 
     Route::get('/approvals/pending', [ApprovalController::class, 'pending'])->name('approvals.pending');
     Route::post('/requests/{employeeRequest}/decision', [RequestTransitionController::class, 'decide'])->name('requests.decision');

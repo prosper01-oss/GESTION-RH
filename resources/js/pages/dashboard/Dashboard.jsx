@@ -14,6 +14,7 @@ const shortcuts = [
     { to: '/personnel', label: 'Annuaire du personnel', description: 'Rechercher et consulter les fiches', permission: 'employees.view' },
     { to: '/personnel/nouveau', label: 'Nouvel employé', description: 'Créer une fiche du personnel', permission: 'employees.manage' },
     { to: '/services', label: 'Services', description: 'Liste des services et effectifs' },
+    { to: '/rapports', label: 'Tableau de bord RH', description: 'Indicateurs, absences et exports PDF / Excel', permission: 'reports.view' },
     { to: '/parametres/conges', label: 'Types de congés', description: 'Droits, décompte et report', permission: 'leave_settings.manage' },
     { to: '/parametres/jours-feries', label: 'Jours fériés', description: 'Calendrier des jours non travaillés', permission: 'leave_settings.manage' },
     { to: '/admin/comptes', label: 'Comptes', description: 'Créer les comptes et attribuer les rôles', permission: 'users.manage' },
