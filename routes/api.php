@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\EmployeeController;
 use App\Http\Controllers\Api\EmployeePhotoController;
 use App\Http\Controllers\Api\EmployeeStatusController;
 use App\Http\Controllers\Api\ExitPassController;
+use App\Http\Controllers\Api\ImportController;
 use App\Http\Controllers\Api\LeaveBalanceAdjustmentController;
 use App\Http\Controllers\Api\LeaveBalanceController;
 use App\Http\Controllers\Api\LeaveDayCountController;
@@ -55,6 +56,9 @@ Route::middleware(['auth:sanctum', EnsureAccountIsUsable::class])->group(functio
     Route::get('/me/notification-preferences', [MyNotificationController::class, 'preferences'])->name('me.notification-preferences.show');
     Route::put('/me/notification-preferences', [MyNotificationController::class, 'updatePreferences'])->name('me.notification-preferences.update');
 
+    Route::get('/imports/templates/{type}', [ImportController::class, 'template'])->name('imports.template');
+    Route::post('/employees/import', [ImportController::class, 'employees'])->name('employees.import');
+    Route::post('/leave-balances/import', [ImportController::class, 'balances'])->name('leave-balances.import');
     Route::apiResource('employees', EmployeeController::class)->except('destroy');
     Route::patch('/employees/{employee}/status', [EmployeeStatusController::class, 'update'])->name('employees.status.update');
     Route::get('/employees/{employee}/photo', [EmployeePhotoController::class, 'show'])->name('employees.photo.show');

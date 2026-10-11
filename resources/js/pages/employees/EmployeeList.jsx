@@ -64,9 +64,14 @@ export default function EmployeeList() {
             <div className="flex flex-wrap items-center justify-between gap-4">
                 <h1 className="text-xl font-semibold">Personnel</h1>
                 {can('employees.manage') && (
-                    <Link to="/personnel/nouveau" className="rounded-md bg-sky-700 px-4 py-2 text-sm font-medium text-white hover:bg-sky-800">
-                        Nouvel employé
-                    </Link>
+                    <div className="flex gap-2">
+                        <Link to="/personnel/import" className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                            Importer
+                        </Link>
+                        <Link to="/personnel/nouveau" className="rounded-md bg-sky-700 px-4 py-2 text-sm font-medium text-white hover:bg-sky-800">
+                            Nouvel employé
+                        </Link>
+                    </div>
                 )}
             </div>
 

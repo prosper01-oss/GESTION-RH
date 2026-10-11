@@ -14,6 +14,7 @@ import DepartmentList from './pages/departments/DepartmentList';
 import EmployeeForm from './pages/employees/EmployeeForm';
 import EmployeeList from './pages/employees/EmployeeList';
 import EmployeeShow from './pages/employees/EmployeeShow';
+import ImportData from './pages/employees/ImportData';
 import DelegationList from './pages/delegations/DelegationList';
 import ExitPassFollowUp from './pages/exits/ExitPassFollowUp';
 import ExitPassForm from './pages/exits/ExitPassForm';
@@ -64,6 +65,7 @@ export default function App() {
                     </Route>
                     <Route element={<RequireAuth permission="employees.manage" />}>
                         <Route path="/personnel/nouveau" element={<EmployeeForm />} />
+                        <Route path="/personnel/import" element={<ImportData />} />
                         <Route path="/personnel/:id/modifier" element={<EmployeeForm />} />
                     </Route>
                     <Route element={<RequireAuth permission="leave_settings.manage" />}>
