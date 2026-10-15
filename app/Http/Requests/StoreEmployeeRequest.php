@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Enums\ContractType;
+use App\Enums\Sexe;
+use App\Enums\SituationFamiliale;
 use App\Models\Employee;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -29,6 +31,12 @@ class StoreEmployeeRequest extends FormRequest
             'matricule' => ['required', 'string', 'max:30', Rule::unique('employees', 'matricule')->ignore($this->route('employee'))],
             'nom' => ['required', 'string', 'max:255'],
             'prenom' => ['required', 'string', 'max:255'],
+            'cin' => ['nullable', 'string', 'max:30'],
+            'date_naissance' => ['nullable', 'date', 'before:today'],
+            'numero_cnasp' => ['nullable', 'string', 'max:30'],
+            'adresse' => ['nullable', 'string', 'max:255'],
+            'sexe' => ['nullable', Rule::enum(Sexe::class)],
+            'situation_familiale' => ['nullable', Rule::enum(SituationFamiliale::class)],
             'department_id' => ['required', 'integer', Rule::exists('departments', 'id')],
             'position' => ['required', 'string', 'max:255'],
             'hire_date' => ['required', 'date', 'before_or_equal:today'],

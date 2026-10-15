@@ -228,8 +228,114 @@ class LeaveBalanceService
     }
 
     /**
+     * Toutes les années pour lesquelles un agent a au moins une entrée de solde.
+     *
+     * @return list<int>
+     */
+    public function availableYears(Employee $employee, LeaveType $leaveType): array
+    {
+        return LeaveBalance::query()
+            ->where(['employee_id' => $employee->id, 'leave_type_id' => $leaveType->id])
+            ->pluck('period_year')
+            ->sort()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Décomposition mensuelle du solde pour une année donnée.
+     * Pour chaque mois (janvier → mois en cours pour l'année actuelle, ou décembre sinon) :
+     * - acquired  : jours acquis ce mois (acquisition mensuelle, référence AAAA-MM)
+     * - consumed  : jours consommés ce mois (valeur absolue)
+     * - available : solde cumulé disponible en fin de mois (toutes années, tous mouvements)
+     *
+     * @return array<int, array{month: string, label: string, acquired: float, consumed: float, available: float}>
+     */
+    public function monthlyBreakdown(Employee $employee, LeaveType $leaveType, int $year): array
+    {
+        $balanceIds = LeaveBalance::query()
+            ->where(['employee_id' => $employee->id, 'leave_type_id' => $leaveType->id])
+            ->pluck('id');
+
+        if ($balanceIds->isEmpty()) {
+            return [];
+        }
+
+        $currentYear = (int) now()->year;
+        $lastMonth = $year < $currentYear ? 12 : now()->month;
+
+        $result = [];
+
+        for ($m = 1; $m <= $lastMonth; $m++) {
+            $period = sprintf('%04d-%02d', $year, $m);
+            $endOfMonth = CarbonImmutable::create($year, $m, 1)->endOfMonth();
+
+            // Acquisition mensuelle créditée pour ce mois précis
+            $acquired = (float) LeaveBalanceEntry::query()
+                ->whereIn('leave_balance_id', $balanceIds)
+                ->where('entry_type', BalanceEntryType::Acquisition)
+                ->where('reference_period', $period)
+                ->sum('days');
+
+            // Consommations enregistrées pendant ce mois calendaire
+            $consumed = abs((float) LeaveBalanceEntry::query()
+                ->whereIn('leave_balance_id', $balanceIds)
+                ->where('entry_type', BalanceEntryType::Consommation)
+                ->whereYear('created_at', $year)
+                ->whereMonth('created_at', $m)
+                ->sum('days'));
+
+            // Solde total disponible en fin de mois (tous mouvements confondus jusqu'à cette date)
+            $available = round((float) LeaveBalanceEntry::query()
+                ->whereIn('leave_balance_id', $balanceIds)
+                ->where('created_at', '<=', $endOfMonth->toDateTimeString())
+                ->sum('days'), 2) + 0.0;
+
+            $result[] = [
+                'month' => $period,
+                'label' => CarbonImmutable::create($year, $m, 1)->locale('fr')->isoFormat('MMMM'),
+                'acquired' => round($acquired, 2) + 0.0,
+                'consumed' => round($consumed, 2) + 0.0,
+                'available' => $available,
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Total des jours disponibles pour un agent sur tous les exercices (toutes années confondues).
+     */
+    public function totalAvailableAllYears(Employee $employee, LeaveType $leaveType): float
+    {
+        return (float) LeaveBalance::query()
+            ->where(['employee_id' => $employee->id, 'leave_type_id' => $leaveType->id])
+            ->join('leave_balance_entries', 'leave_balance_entries.leave_balance_id', '=', 'leave_balances.id')
+            ->sum('leave_balance_entries.days');
+    }
+
+    /**
+     * Soldes restants par année pour un agent (toutes les années ayant un solde).
+     *
+     * @return array<int, array{year: int, available: float}>
+     */
+    public function balancesByYear(Employee $employee, LeaveType $leaveType): array
+    {
+        $balances = LeaveBalance::query()
+            ->where(['employee_id' => $employee->id, 'leave_type_id' => $leaveType->id])
+            ->orderBy('period_year')
+            ->get();
+
+        return $balances->map(fn (LeaveBalance $balance): array => [
+            'year' => $balance->period_year,
+            'available' => $this->summary($balance)['available'],
+        ])->values()->all();
+    }
+
+    /**
      * Acquisition mensuelle pour un mois écoulé : un agent actif, embauché au plus tard le 1er du mois,
      * reçoit le droit annuel / 12. Sans effet si le mois a déjà été crédité.
+     * Le crédit est plafonné si le total cumulé atteint OMIT_MAX_BALANCE_DAYS.
      *
      * @return int Nombre d'acquisitions créées.
      */
@@ -245,8 +351,13 @@ class LeaveBalanceService
             }
 
             $this->eligibleEmployees($month)->each(function (Employee $employee) use ($leaveType, $month, $policy, &$created): void {
+                $entitlement = $this->cappedEntitlement($employee, $leaveType, $policy->monthlyEntitlement());
+                if ($entitlement <= 0) {
+                    return;
+                }
+
                 $created += (int) $this->creditOnce(
-                    $employee, $leaveType, $month->year, $month->format('Y-m'), $policy->monthlyEntitlement(), 'Acquisition du mois '.$month->format('m/Y'),
+                    $employee, $leaveType, $month->year, $month->format('Y-m'), $entitlement, 'Acquisition du mois '.$month->format('m/Y'),
                 );
             });
         }
@@ -318,6 +429,7 @@ class LeaveBalanceService
 
     /**
      * Droits annuels crédités en une fois pour les types à acquisition annuelle.
+     * Le crédit est plafonné si le total cumulé atteint OMIT_MAX_BALANCE_DAYS.
      */
     public function accrueYear(int $year): int
     {
@@ -331,7 +443,12 @@ class LeaveBalanceService
             }
 
             $this->eligibleEmployees($firstDay)->each(function (Employee $employee) use ($leaveType, $year, $policy, &$created): void {
-                $created += (int) $this->creditOnce($employee, $leaveType, $year, (string) $year, (float) $policy->annual_entitlement, "Droits annuels {$year}");
+                $entitlement = $this->cappedEntitlement($employee, $leaveType, (float) $policy->annual_entitlement);
+                if ($entitlement <= 0) {
+                    return;
+                }
+
+                $created += (int) $this->creditOnce($employee, $leaveType, $year, (string) $year, $entitlement, "Droits annuels {$year}");
             });
         }
 
@@ -347,6 +464,23 @@ class LeaveBalanceService
             ->where('status', EmployeeStatus::Actif)
             ->whereDate('hire_date', '<=', $date->toDateString())
             ->get();
+    }
+
+    /**
+     * Réduit le droit à créditer pour ne pas dépasser OMIT_MAX_BALANCE_DAYS (toutes années confondues).
+     * Retourne 0 si le plafond est déjà atteint ou si le paramètre est désactivé (0).
+     */
+    private function cappedEntitlement(Employee $employee, LeaveType $leaveType, float $entitlement): float
+    {
+        $max = (int) config('omit.max_balance_days', 0);
+        if ($max <= 0) {
+            return $entitlement;
+        }
+
+        $current = $this->totalAvailableAllYears($employee, $leaveType);
+        $room = round($max - $current, 2);
+
+        return max(0.0, min($entitlement, $room));
     }
 
     /**

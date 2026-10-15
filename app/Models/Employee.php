@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\ContractType;
 use App\Enums\EmployeeStatus;
+use App\Enums\Sexe;
+use App\Enums\SituationFamiliale;
 use Database\Factories\EmployeeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -15,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['matricule', 'nom', 'prenom', 'department_id', 'position', 'hire_date', 'contract_type', 'phone_pro', 'email_pro'])]
+#[Fillable(['matricule', 'nom', 'prenom', 'cin', 'date_naissance', 'numero_cnasp', 'adresse', 'sexe', 'situation_familiale', 'department_id', 'position', 'hire_date', 'contract_type', 'phone_pro', 'email_pro'])]
 #[Hidden(['photo_path'])]
 class Employee extends Model
 {
@@ -35,8 +37,11 @@ class Employee extends Model
     {
         return [
             'hire_date' => 'date',
+            'date_naissance' => 'date',
             'status' => EmployeeStatus::class,
             'contract_type' => ContractType::class,
+            'sexe' => Sexe::class,
+            'situation_familiale' => SituationFamiliale::class,
         ];
     }
 

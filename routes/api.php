@@ -69,7 +69,11 @@ Route::middleware(['auth:sanctum', EnsureAccountIsUsable::class])->group(functio
     Route::get('/leave-types', [LeaveTypeController::class, 'index'])->name('leave-types.index');
     Route::get('/leave-days/count', [LeaveDayCountController::class, 'show'])->name('leave-days.count');
     Route::get('/leave-balances/me', [LeaveBalanceController::class, 'mine'])->name('leave-balances.mine');
+    Route::get('/leave-balances/me/years', [LeaveBalanceController::class, 'myYearsSummary'])->name('leave-balances.mine.years');
+    Route::get('/leave-balances/me/monthly', [LeaveBalanceController::class, 'myMonthly'])->name('leave-balances.mine.monthly');
     Route::get('/leave-balances/{employee}', [LeaveBalanceController::class, 'show'])->name('leave-balances.show');
+    Route::get('/leave-balances/{employee}/years', [LeaveBalanceController::class, 'yearsSummary'])->name('leave-balances.years');
+    Route::get('/leave-balances/{employee}/monthly', [LeaveBalanceController::class, 'monthly'])->name('leave-balances.monthly');
     Route::get('/requests', [RequestController::class, 'index'])->name('requests.index');
     Route::get('/requests/{employeeRequest}', [RequestController::class, 'show'])->name('requests.show');
     Route::post('/requests/{employeeRequest}/submit', [RequestTransitionController::class, 'submit'])->name('requests.submit');

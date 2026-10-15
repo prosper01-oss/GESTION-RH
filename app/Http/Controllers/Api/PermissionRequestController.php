@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\PermissionName;
 use App\Enums\RequestType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SavePermissionRequestRequest;
 use App\Http\Resources\EmployeeRequestResource;
+use App\Models\Employee;
 use App\Models\EmployeeRequest;
 use App\Services\PermissionRequestService;
 use Illuminate\Http\JsonResponse;
@@ -20,7 +22,18 @@ class PermissionRequestController extends Controller
     {
         Gate::authorize('create', EmployeeRequest::class);
 
-        $permission = $this->permissions->createDraft($request->user()->employee, $request->validated());
+        $validated = $request->validated();
+        $employeeId = $validated['employee_id'] ?? null;
+
+        if ($employeeId !== null) {
+            Gate::authorize(PermissionName::ReviewRequests->value);
+            $employee = Employee::findOrFail($employeeId);
+        } else {
+            $employee = $request->user()->employee;
+            abort_if($employee === null, 422, "Ce compte n'est rattaché à aucune fiche du personnel.");
+        }
+
+        $permission = $this->permissions->createDraft($employee, $validated);
 
         return EmployeeRequestResource::forDisplay($permission)->response()->setStatusCode(201);
     }

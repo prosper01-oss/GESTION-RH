@@ -33,13 +33,30 @@ class LeaveRequestControllerTest extends TestCase
             ->assertJsonPath('data.can_edit', true);
     }
 
-    public function test_account_without_employee_record_gets_403(): void
+    public function test_rh_without_employee_record_and_no_employee_id_gets_422(): void
     {
         $leaveType = $this->annualLeave();
 
         $this->actingAs($this->rh())->postJson('/api/v1/leave-requests', [
             'leave_type_id' => $leaveType->id, 'start_date' => now()->addDay()->toDateString(), 'end_date' => now()->addDays(2)->toDateString(),
-        ])->assertForbidden();
+        ])->assertUnprocessable();
+    }
+
+    public function test_rh_can_create_and_submit_a_leave_request_for_any_employee(): void
+    {
+        $leaveType = $this->annualLeave();
+        $agent = $this->agentWithBalance($leaveType);
+        $rh = $this->rh();
+
+        $response = $this->actingAs($rh)->postJson('/api/v1/leave-requests', [
+            'employee_id' => $agent->employee_id,
+            'leave_type_id' => $leaveType->id,
+            'start_date' => now()->addDays(10)->toDateString(),
+            'end_date' => now()->addDays(14)->toDateString(),
+        ])->assertCreated()->assertJsonPath('data.status', 'brouillon');
+
+        $id = $response->json('data.id');
+        $this->actingAs($rh)->postJson("/api/v1/requests/{$id}/submit")->assertOk()->assertJsonPath('data.status', 'soumise');
     }
 
     public function test_period_with_only_non_counted_days_returns_422(): void

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\PermissionName;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveLeaveRequestRequest;
 use App\Http\Resources\EmployeeRequestResource;
+use App\Models\Employee;
 use App\Models\EmployeeRequest;
 use App\Services\LeaveRequestService;
 use Illuminate\Http\JsonResponse;
@@ -18,7 +20,18 @@ class LeaveRequestController extends Controller
     {
         Gate::authorize('create', EmployeeRequest::class);
 
-        $leaveRequest = $this->leaveRequests->createDraft($request->user()->employee, $request->validated());
+        $validated = $request->validated();
+        $employeeId = $validated['employee_id'] ?? null;
+
+        if ($employeeId !== null) {
+            Gate::authorize(PermissionName::ReviewRequests->value);
+            $employee = Employee::findOrFail($employeeId);
+        } else {
+            $employee = $request->user()->employee;
+            abort_if($employee === null, 422, "Ce compte n'est rattaché à aucune fiche du personnel.");
+        }
+
+        $leaveRequest = $this->leaveRequests->createDraft($employee, $validated);
 
         return EmployeeRequestResource::forDisplay($leaveRequest)->response()->setStatusCode(201);
     }

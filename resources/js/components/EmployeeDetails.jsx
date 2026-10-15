@@ -1,11 +1,20 @@
-import { contractTypeLabels, formatDate } from '../services/labels';
+import { contractTypeLabels, formatDate, sexeLabels, situationFamilialeLabels } from '../services/labels';
 import StatusBadge from './StatusBadge';
 
 /**
  * Fiche d'identité professionnelle, avec la photo servie par l'API après contrôle des droits.
  */
 export default function EmployeeDetails({ employee, photoVersion = '' }) {
-    const rows = [
+    const identiteRows = [
+        ['CIN', employee.cin || '—'],
+        ['Date de naissance', formatDate(employee.date_naissance)],
+        ['Sexe', sexeLabels[employee.sexe] ?? '—'],
+        ['Situation familiale', situationFamilialeLabels[employee.situation_familiale] ?? '—'],
+        ['N° CNASP', employee.numero_cnasp || '—'],
+        ['Adresse', employee.adresse || '—'],
+    ];
+
+    const proRows = [
         ['Matricule', employee.matricule],
         ['Service', employee.department?.name ?? '—'],
         ['Fonction', employee.position],
@@ -24,21 +33,37 @@ export default function EmployeeDetails({ employee, photoVersion = '' }) {
                     `${employee.prenom[0] ?? ''}${employee.nom[0] ?? ''}`
                 )}
             </div>
-            <div className="flex-1">
-                <div className="mb-4 flex flex-wrap items-center gap-3">
+            <div className="flex-1 flex flex-col gap-6">
+                <div className="flex flex-wrap items-center gap-3">
                     <h2 className="text-lg font-semibold">
                         {employee.prenom} {employee.nom}
                     </h2>
                     <StatusBadge status={employee.status} />
                 </div>
-                <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
-                    {rows.map(([label, value]) => (
-                        <div key={label}>
-                            <dt className="text-slate-500">{label}</dt>
-                            <dd className="font-medium">{value}</dd>
-                        </div>
-                    ))}
-                </dl>
+
+                <div>
+                    <p className="mb-2 text-xs font-semibold tracking-wide text-slate-400 uppercase">Identité</p>
+                    <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+                        {identiteRows.map(([label, value]) => (
+                            <div key={label}>
+                                <dt className="text-slate-500">{label}</dt>
+                                <dd className="font-medium">{value}</dd>
+                            </div>
+                        ))}
+                    </dl>
+                </div>
+
+                <div>
+                    <p className="mb-2 text-xs font-semibold tracking-wide text-slate-400 uppercase">Informations professionnelles</p>
+                    <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+                        {proRows.map(([label, value]) => (
+                            <div key={label}>
+                                <dt className="text-slate-500">{label}</dt>
+                                <dd className="font-medium">{value}</dd>
+                            </div>
+                        ))}
+                    </dl>
+                </div>
             </div>
         </div>
     );

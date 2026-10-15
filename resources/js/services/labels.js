@@ -5,6 +5,18 @@ export const roleLabels = {
     admin: 'Administrateur',
 };
 
+export const sexeLabels = {
+    masculin: 'Masculin',
+    feminin: 'Féminin',
+};
+
+export const situationFamilialeLabels = {
+    celibataire: 'Célibataire',
+    marie: 'Marié(e)',
+    divorce: 'Divorcé(e)',
+    veuf: 'Veuf / Veuve',
+};
+
 export const contractTypeLabels = {
     cdi: 'CDI',
     cdd: 'CDD',

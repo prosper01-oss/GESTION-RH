@@ -27,6 +27,7 @@ class SaveLeaveRequestRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'employee_id' => ['nullable', 'integer', Rule::exists('employees', 'id')],
             'leave_type_id' => ['required', 'integer', Rule::exists('leave_types', 'id')->where('is_active', true)],
             'start_date' => ['required', 'date', 'after_or_equal:'.now()->subDays(30)->toDateString()],
             'end_date' => ['required', 'date', 'after_or_equal:start_date', 'before_or_equal:'.now()->addYears(2)->toDateString()],

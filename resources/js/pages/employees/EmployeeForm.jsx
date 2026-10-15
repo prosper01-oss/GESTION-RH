@@ -4,12 +4,18 @@ import Alert from '../../components/Alert';
 import Button from '../../components/Button';
 import Field from '../../components/Field';
 import api, { errorMessage, validationErrors } from '../../services/api';
-import { contractTypeLabels } from '../../services/labels';
+import { contractTypeLabels, sexeLabels, situationFamilialeLabels } from '../../services/labels';
 
 const emptyForm = {
     matricule: '',
     nom: '',
     prenom: '',
+    cin: '',
+    date_naissance: '',
+    numero_cnasp: '',
+    adresse: '',
+    sexe: '',
+    situation_familiale: '',
     department_id: '',
     position: '',
     hire_date: '',
@@ -74,6 +80,29 @@ export default function EmployeeForm() {
             )}
 
             <section className="grid gap-4 rounded-lg border border-slate-200 bg-white p-6 sm:grid-cols-2">
+                <h2 className="col-span-full text-sm font-semibold tracking-wide text-slate-500 uppercase">Identité</h2>
+                <Field label="Nom" name="nom" required value={form.nom} onChange={update} error={errors.nom} />
+                <Field label="Prénoms" name="prenom" required value={form.prenom} onChange={update} error={errors.prenom} />
+                <Field label="CIN" name="cin" value={form.cin} onChange={update} error={errors.cin} />
+                <Field label="Date de naissance" name="date_naissance" type="date" value={form.date_naissance} onChange={update} error={errors.date_naissance} />
+                <Field label="Sexe" name="sexe" as="select" value={form.sexe} onChange={update} error={errors.sexe}>
+                    <option value="">—</option>
+                    {Object.entries(sexeLabels).map(([value, label]) => (
+                        <option key={value} value={value}>{label}</option>
+                    ))}
+                </Field>
+                <Field label="Situation familiale" name="situation_familiale" as="select" value={form.situation_familiale} onChange={update} error={errors.situation_familiale}>
+                    <option value="">—</option>
+                    {Object.entries(situationFamilialeLabels).map(([value, label]) => (
+                        <option key={value} value={value}>{label}</option>
+                    ))}
+                </Field>
+                <Field label="Numéro CNASP" name="numero_cnasp" value={form.numero_cnasp} onChange={update} error={errors.numero_cnasp} />
+                <Field label="Adresse" name="adresse" value={form.adresse} onChange={update} error={errors.adresse} />
+            </section>
+
+            <section className="grid gap-4 rounded-lg border border-slate-200 bg-white p-6 sm:grid-cols-2">
+                <h2 className="col-span-full text-sm font-semibold tracking-wide text-slate-500 uppercase">Informations professionnelles</h2>
                 <Field label="Matricule" name="matricule" required value={form.matricule} onChange={update} error={errors.matricule} />
                 <Field label="Service" name="department_id" as="select" required value={form.department_id} onChange={update} error={errors.department_id}>
                     <option value="">Choisir…</option>
@@ -83,8 +112,6 @@ export default function EmployeeForm() {
                         </option>
                     ))}
                 </Field>
-                <Field label="Nom" name="nom" required value={form.nom} onChange={update} error={errors.nom} />
-                <Field label="Prénoms" name="prenom" required value={form.prenom} onChange={update} error={errors.prenom} />
                 <Field label="Fonction" name="position" required value={form.position} onChange={update} error={errors.position} />
                 <Field label="Date d'embauche" name="hire_date" type="date" required value={form.hire_date} onChange={update} error={errors.hire_date} />
                 <Field label="Type de contrat" name="contract_type" as="select" required value={form.contract_type} onChange={update} error={errors.contract_type}>

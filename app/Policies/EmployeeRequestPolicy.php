@@ -23,11 +23,12 @@ class EmployeeRequestPolicy
     }
 
     /**
-     * Seul un compte rattaché à une fiche employé dépose des demandes.
+     * Un agent rattaché à une fiche peut déposer ses propres demandes.
+     * Les RH peuvent en créer pour n'importe quel agent.
      */
     public function create(User $user): bool
     {
-        return $user->employee_id !== null;
+        return $user->employee_id !== null || $user->hasPermission(PermissionName::ReviewRequests);
     }
 
     public function update(User $user, EmployeeRequest $request): bool

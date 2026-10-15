@@ -23,6 +23,9 @@ import PermissionRequestForm from './pages/permissions/PermissionRequestForm';
 import RequestEdit from './pages/requests/RequestEdit';
 import RequestList from './pages/requests/RequestList';
 import RequestShow from './pages/requests/RequestShow';
+import CongeRHForm from './pages/rh/CongeRHForm';
+import DemandesRH from './pages/rh/DemandesRH';
+import PermissionRHForm from './pages/rh/PermissionRHForm';
 import Reports from './pages/reports/Reports';
 import PermissionTypeSettings from './pages/settings/PermissionTypeSettings';
 import LeaveTypeSettings from './pages/settings/LeaveTypeSettings';
@@ -54,6 +57,9 @@ export default function App() {
                     <Route path="/preferences" element={<NotificationPreferences />} />
                     <Route element={<RequireAuth permission="requests.review" />}>
                         <Route path="/sorties" element={<ExitPassFollowUp />} />
+                        <Route path="/rh/demandes" element={<DemandesRH />} />
+                        <Route path="/rh/demandes/conge/nouveau" element={<CongeRHForm />} />
+                        <Route path="/rh/demandes/permission/nouveau" element={<PermissionRHForm />} />
                     </Route>
                     <Route element={<RequireAuth permission="reports.view" />}>
                         <Route path="/rapports" element={<Reports />} />

@@ -91,7 +91,7 @@ export default function ApprovalQueue() {
                                     <p className="font-medium">
                                         {request.employee.nom} {request.employee.prenom}
                                     </p>
-                                    <p className="text-xs text-slate-500">{request.employee.department}</p>
+                                    <p className="text-xs text-slate-500">{request.employee.department?.name}</p>
                                 </td>
                                 <td className="px-4 py-3">
                                     <p>

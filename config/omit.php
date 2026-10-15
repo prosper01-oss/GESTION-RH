@@ -29,6 +29,18 @@ return [
 
     'reminder_days' => (int) env('OMIT_REMINDER_DAYS', 3),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Plafond de solde cumulé
+    |--------------------------------------------------------------------------
+    |
+    | max_balance_days : total de jours disponibles (toutes années confondues)
+    | au-delà duquel aucune nouvelle acquisition n'est créditée. 0 = illimité.
+    |
+    */
+
+    'max_balance_days' => (int) env('OMIT_MAX_BALANCE_DAYS', 90),
+
     'sms_gateway' => env('OMIT_SMS_GATEWAY', LogSmsGateway::class),
 
     /*

@@ -33,6 +33,7 @@ class RequestWorkflow
      */
     private const TRANSITIONS = [
         [S::Brouillon, S::Soumise, self::OWNER],
+        [S::Brouillon, S::Soumise, self::REVIEWER],
         [S::Brouillon, S::Annulee, self::OWNER],
         [S::Soumise, S::Annulee, self::OWNER],
         [S::ACorriger, S::Soumise, self::OWNER],
@@ -71,10 +72,16 @@ class RequestWorkflow
             $request->load(['employee', 'attachments', ...EmployeeRequest::detailRelations()]);
             $from = $request->status;
 
-            $rule = collect(self::TRANSITIONS)->first(fn (array $rule): bool => $rule[0] === $from && $rule[1] === $to);
-            if ($rule === null) {
+            $candidates = collect(self::TRANSITIONS)
+                ->filter(fn (array $rule): bool => $rule[0] === $from && $rule[1] === $to);
+
+            if ($candidates->isEmpty()) {
                 throw new ConflictHttpException(sprintf('Transition interdite : « %s » vers « %s ».', $from->label(), $to->label()));
             }
+
+            // Choisir la règle que l'acteur peut exécuter, sinon prendre la première pour l'erreur d'autorisation.
+            $rule = $candidates->first(fn (array $rule): bool => $actor === null || $this->actorMatches($request, $rule[2], $actor))
+                ?? $candidates->first();
 
             $this->authorize($request, $rule[2], $to, $actor);
             $onBehalfOf = $this->delegatorFor($rule[2], $actor);
