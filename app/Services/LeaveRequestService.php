@@ -94,6 +94,8 @@ class LeaveRequestService
             'starts_afternoon' => $startsAfternoon,
             'ends_morning' => $endsMorning,
             'is_urgent' => (bool) ($data['is_urgent'] ?? false),
+            'return_date' => $data['return_date'] ?? null,
+            'interim_employee_id' => $data['interim_employee_id'] ?? null,
             'requested_days' => $this->countDays($leaveType, $data['start_date'], $data['end_date'], $startsAfternoon, $endsMorning),
             'reason' => $data['reason'] ?? null,
         ];

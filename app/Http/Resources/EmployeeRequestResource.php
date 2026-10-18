@@ -72,6 +72,15 @@ class EmployeeRequestResource extends JsonResource
                 'actual_end_date' => $detail->actual_end_date?->toDateString(),
                 'reason' => $detail->reason,
                 'is_urgent' => $detail->is_urgent,
+                'return_date' => $detail->return_date?->toDateString(),
+                'interim' => $detail->interim ? [
+                    'id' => $detail->interim->id,
+                    'matricule' => $detail->interim->matricule,
+                    'nom' => $detail->interim->nom,
+                    'prenom' => $detail->interim->prenom,
+                    'position' => $detail->interim->position,
+                    'department' => $detail->interim->department ? ['name' => $detail->interim->department->name] : null,
+                ] : null,
                 // R6 : justificatif attendu après l'envoi, et retard éventuel.
                 'attachment_due_at' => $detail->attachment_due_at,
                 'attachment_overdue' => $detail->attachment_due_at !== null

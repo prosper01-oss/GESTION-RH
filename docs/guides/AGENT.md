@@ -21,7 +21,11 @@ Le **tableau de bord** affiche votre fiche et votre solde disponible. Le solde e
 ## Faire une demande
 
 1. Menu **Mes demandes**, puis **+ Congé**, **+ Permission** ou **+ Billet de sortie**.
-2. Remplissez le formulaire. Pour un congé, le nombre de jours décomptés s'affiche tout seul. Pour le congé annuel, les samedis et dimanches comptent, les jours fériés non.
+2. Remplissez le formulaire. Pour un congé, le nombre de jours décomptés s'affiche tout seul. Pour le congé annuel, les samedis et dimanches comptent, les jours fériés non. Deux champs sont **obligatoires** :
+   - la **date de reprise du travail**, proposée automatiquement (le lendemain du dernier jour) et modifiable ;
+   - l'**intérim** : le collègue qui assure votre poste, recherché par nom ou matricule. Il doit être présent pendant tout votre congé ; il est prévenu quand le congé est approuvé.
+   
+   Ces deux informations figurent sur l'autorisation imprimée.
 3. Cliquez sur **Enregistrer le brouillon**. Le brouillon n'est visible que de vous.
 4. Ajoutez un justificatif si on vous le demande (PDF, JPG ou PNG, 5 Mo au maximum).
 5. Cliquez sur **Envoyer aux RH** (pour un billet de sortie, la demande part à votre chef de service).

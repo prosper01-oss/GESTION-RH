@@ -83,7 +83,7 @@ class EmployeeRequest extends Model
      */
     public static function detailRelations(): array
     {
-        return ['leaveDetail.leaveType', 'permissionDetail.permissionType', 'exitDetail'];
+        return ['leaveDetail.leaveType', 'leaveDetail.interim.department', 'permissionDetail.permissionType', 'exitDetail'];
     }
 
     /**

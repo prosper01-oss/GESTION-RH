@@ -8,12 +8,15 @@ use App\Models\LeaveBalance;
 use App\Models\LeaveType;
 use App\Models\User;
 use App\Services\LeaveBalanceService;
+use Carbon\CarbonImmutable;
 
 /**
  * Données communes aux tests des demandes de congé.
  */
 trait CreatesLeaveRequests
 {
+    private ?Employee $interimEmployee = null;
+
     protected function annualLeave(array $attributes = []): LeaveType
     {
         return LeaveType::factory()->withPolicy(['counting_mode' => 'calendar'])->create($attributes + ['name' => 'Congé annuel']);
@@ -47,12 +50,24 @@ trait CreatesLeaveRequests
      */
     protected function draft(User $agent, LeaveType $leaveType, array $overrides = []): int
     {
+        $endDate = $overrides['end_date'] ?? now()->addDays(14)->toDateString();
+
         return $this->actingAs($agent)->postJson('/api/v1/leave-requests', $overrides + [
             'leave_type_id' => $leaveType->id,
             'start_date' => now()->addDays(10)->toDateString(),
-            'end_date' => now()->addDays(14)->toDateString(),
+            'end_date' => $endDate,
+            'return_date' => CarbonImmutable::parse($endDate)->addDay()->toDateString(),
+            'interim_employee_id' => $this->interim()->id,
             'reason' => 'Vacances',
         ])->assertCreated()->json('data.id');
+    }
+
+    /**
+     * Collègue disponible pour assurer l'intérim (créé une fois par test).
+     */
+    protected function interim(): Employee
+    {
+        return $this->interimEmployee ??= Employee::factory()->create(['nom' => 'Intérim']);
     }
 
     protected function rh(): User

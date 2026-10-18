@@ -88,6 +88,20 @@ class SendRequestNotifications
     private function approved(?User $owner, $request, string $type, string $reference, string $agent): void
     {
         $this->send($owner, $request, 'Demande approuvée', "Votre demande de {$type} {$reference} est approuvée.", sms: true);
+
+        // L'agent qui assure l'intérim est prévenu de la période à couvrir.
+        $interimUser = $request->leaveDetail?->interim?->user;
+        if ($interimUser !== null && $interimUser->is_active) {
+            $detail = $request->leaveDetail;
+            $this->send($interimUser, $request, 'Intérim à assurer', sprintf(
+                "Vous assurerez l'intérim de %s du %s au %s (reprise le %s), demande %s.",
+                $agent,
+                $detail->start_date->format('d/m/Y'),
+                $detail->end_date->format('d/m/Y'),
+                $detail->return_date?->format('d/m/Y') ?? '—',
+                $reference,
+            ));
+        }
         $this->send($this->recipients->reviewers($request), $request, 'Demande à finaliser', "La demande {$reference} de {$agent} est approuvée : elle est à finaliser.");
     }
 

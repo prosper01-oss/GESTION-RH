@@ -23,6 +23,8 @@ class LeaveRequestControllerTest extends TestCase
             'leave_type_id' => $leaveType->id,
             'start_date' => now()->addDays(10)->toDateString(),
             'end_date' => now()->addDays(14)->toDateString(),
+            'return_date' => now()->addDays(15)->toDateString(),
+            'interim_employee_id' => $this->interim()->id,
             'requested_days' => 1,
         ]);
 
@@ -53,6 +55,8 @@ class LeaveRequestControllerTest extends TestCase
             'leave_type_id' => $leaveType->id,
             'start_date' => now()->addDays(10)->toDateString(),
             'end_date' => now()->addDays(14)->toDateString(),
+            'return_date' => now()->addDays(15)->toDateString(),
+            'interim_employee_id' => $this->interim()->id,
         ])->assertCreated()->assertJsonPath('data.status', 'brouillon');
 
         $id = $response->json('data.id');
@@ -67,6 +71,7 @@ class LeaveRequestControllerTest extends TestCase
 
         $this->actingAs($agent)->postJson('/api/v1/leave-requests', [
             'leave_type_id' => $leaveType->id, 'start_date' => $saturday->toDateString(), 'end_date' => $saturday->copy()->addDay()->toDateString(),
+            'return_date' => $saturday->copy()->addDays(2)->toDateString(), 'interim_employee_id' => $this->interim()->id,
         ])->assertUnprocessable()->assertJsonValidationErrors('end_date');
     }
 
@@ -92,6 +97,7 @@ class LeaveRequestControllerTest extends TestCase
 
         $this->actingAs($agent)->putJson("/api/v1/leave-requests/{$id}", [
             'leave_type_id' => $leaveType->id, 'start_date' => now()->addDays(20)->toDateString(), 'end_date' => now()->addDays(21)->toDateString(),
+            'return_date' => now()->addDays(22)->toDateString(), 'interim_employee_id' => $this->interim()->id,
         ])->assertForbidden();
     }
 

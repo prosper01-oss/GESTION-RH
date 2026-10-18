@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['leave_type_id', 'start_date', 'starts_afternoon', 'end_date', 'ends_morning', 'is_urgent', 'requested_days', 'consumed_days', 'actual_end_date', 'reason', 'attachment_due_at', 'attachment_reminded_at'])]
+#[Fillable(['leave_type_id', 'start_date', 'starts_afternoon', 'end_date', 'ends_morning', 'return_date', 'interim_employee_id', 'is_urgent', 'requested_days', 'consumed_days', 'actual_end_date', 'reason', 'attachment_due_at', 'attachment_reminded_at'])]
 class LeaveRequestDetail extends Model
 {
     public $timestamps = false;
@@ -28,6 +28,7 @@ class LeaveRequestDetail extends Model
             'actual_end_date' => 'date',
             'starts_afternoon' => 'boolean',
             'ends_morning' => 'boolean',
+            'return_date' => 'date',
             'is_urgent' => 'boolean',
             'attachment_due_at' => 'datetime',
             'attachment_reminded_at' => 'datetime',
@@ -42,6 +43,16 @@ class LeaveRequestDetail extends Model
     public function request(): BelongsTo
     {
         return $this->belongsTo(EmployeeRequest::class, 'request_id');
+    }
+
+    /**
+     * Agent qui assure l'intérim du poste pendant le congé.
+     *
+     * @return BelongsTo<Employee, $this>
+     */
+    public function interim(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'interim_employee_id');
     }
 
     /**

@@ -4,10 +4,11 @@ import Alert from '../../components/Alert';
 import Button from '../../components/Button';
 import Field from '../../components/Field';
 import LeaveRuleHints from '../../components/LeaveRuleHints';
+import ReturnAndInterimFields, { suggestedReturnDate } from '../../components/ReturnAndInterimFields';
 import api, { errorMessage, validationErrors } from '../../services/api';
 import { countingModeLabels, formatDays } from '../../services/labels';
 
-const emptyForm = { leave_type_id: '', start_date: '', end_date: '', starts_afternoon: false, ends_morning: false, is_urgent: false, reason: '' };
+const emptyForm = { leave_type_id: '', start_date: '', end_date: '', starts_afternoon: false, ends_morning: false, return_date: '', interim: null, interim_employee_id: '', is_urgent: false, reason: '' };
 
 /**
  * Création ou correction d'une demande de congé, avec aperçu du nombre de jours calculé par le serveur.
@@ -42,6 +43,10 @@ export default function LeaveRequestForm() {
                         starts_afternoon: leave.starts_afternoon,
                         ends_morning: leave.ends_morning,
                         is_urgent: leave.is_urgent,
+                        return_date: leave.return_date ?? '',
+                        return_date_touched: Boolean(leave.return_date),
+                        interim: leave.interim,
+                        interim_employee_id: leave.interim?.id ?? '',
                         reason: leave.reason ?? '',
                     });
                 })
@@ -91,6 +96,11 @@ export default function LeaveRequestForm() {
         }
     }
 
+    // Date de reprise proposée d'après le dernier jour, tant que l'utilisateur ne l'a pas modifiée.
+    useEffect(() => {
+        setForm((current) => (current.return_date_touched ? current : { ...current, return_date: suggestedReturnDate(current.end_date, current.ends_morning) }));
+    }, [form.end_date, form.ends_morning]);
+
     const update = (event) => setForm({ ...form, [event.target.name]: event.target.value });
     const check = (event) => setForm({ ...form, [event.target.name]: event.target.checked });
 
@@ -130,6 +140,7 @@ export default function LeaveRequestForm() {
                         </label>
                     )}
                 </div>
+                <ReturnAndInterimFields form={form} setForm={setForm} errors={errors} />
                 <LeaveRuleHints leaveType={selectedType} form={form} setForm={setForm} />
                 <div className="sm:col-span-2">
                     <Field label={form.is_urgent ? "Motif de l'urgence (obligatoire)" : 'Motif (facultatif)'} name="reason" as="textarea" rows={3} required={form.is_urgent} value={form.reason} onChange={update} error={errors.reason} />

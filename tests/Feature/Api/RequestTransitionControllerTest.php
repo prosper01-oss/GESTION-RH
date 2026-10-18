@@ -230,6 +230,7 @@ class RequestTransitionControllerTest extends TestCase
 
         $this->actingAs($agent)->putJson("/api/v1/leave-requests/{$id}", [
             'leave_type_id' => $leaveType->id, 'start_date' => now()->addDays(10)->toDateString(), 'end_date' => now()->addDays(12)->toDateString(),
+            'return_date' => now()->addDays(13)->toDateString(), 'interim_employee_id' => $this->interim()->id,
         ])->assertOk()->assertJsonPath('data.leave.requested_days', 3);
         $this->actingAs($agent)->postJson("/api/v1/leave-requests/{$id}/submit")
             ->assertOk()

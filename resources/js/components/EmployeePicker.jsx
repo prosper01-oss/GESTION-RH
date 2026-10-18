@@ -5,7 +5,7 @@ import api from '../services/api';
  * Champ de recherche d'un agent par nom ou matricule.
  * Appelle onChange(employee) dès qu'un agent est sélectionné, ou onChange(null) si le champ est vidé.
  */
-export default function EmployeePicker({ label = 'Agent', value, onChange, error, required = true }) {
+export default function EmployeePicker({ label = 'Agent', value, onChange, error, required = true, endpoint = '/employees' }) {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState([]);
     const [open, setOpen] = useState(false);
@@ -30,7 +30,7 @@ export default function EmployeePicker({ label = 'Agent', value, onChange, error
             return;
         }
         const timer = setTimeout(() => {
-            api.get('/employees', { params: { search: query, status: 'actif' } })
+            api.get(endpoint, { params: { search: query, status: 'actif' } })
                 .then(({ data }) => {
                     setResults(data.data);
                     setOpen(true);

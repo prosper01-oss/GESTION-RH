@@ -88,6 +88,7 @@ Utilisez deux navigateurs différents, ou une fenêtre de navigation privée, po
 
 | # | Règle | Qui | Action | Résultat attendu | OK | Remarque |
 |---|---|---|---|---|---|---|
+| 6b.0 | — | Agent | Congé sans date de reprise ni intérim, puis avec un intérimaire déjà en congé sur la période | Refus : « Indiquez la date de reprise… », « Choisissez l'agent qui assure l'intérim… », puis « … est absent(e) pendant cette période » ; avec un intérimaire disponible, le PDF affiche la reprise et l'intérim, et l'intérimaire reçoit « Intérim à assurer » à l'approbation | ☐ | |
 | 6b.1 | R3 | Agent | Congé annuel du 24 au 31 décembre | « Jours décomptés : 7 j » : les week-ends comptent, Noël (férié) non | ☐ | |
 | 6b.2 | R8 | Agent | Congé annuel commençant dans 3 jours, sans cocher « Urgence » | Avertissement rouge dans le formulaire ; l'envoi est refusé (« au moins 15 jours à l'avance ») | ☐ | |
 | 6b.3 | R8 | Agent | Même demande, en cochant **Urgence** sans motif, puis avec un motif | Sans motif : refusée ; avec motif : envoyée, badge « Urgence » visible par les RH | ☐ | |

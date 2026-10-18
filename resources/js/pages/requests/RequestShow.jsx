@@ -5,7 +5,7 @@ import Button from '../../components/Button';
 import Field from '../../components/Field';
 import RequestStatusBadge from '../../components/RequestStatusBadge';
 import api, { errorMessage, validationErrors } from '../../services/api';
-import { formatDateTime, formatDays, formatHours, formatPeriod, requestSummary, requestTypeLabels } from '../../services/labels';
+import { formatDate, formatDateTime, formatDays, formatHours, formatPeriod, requestSummary, requestTypeLabels } from '../../services/labels';
 
 /**
  * Action proposée pour chaque statut atteignable. Le serveur indique lesquelles sont permises
@@ -212,6 +212,17 @@ export default function RequestShow() {
                                 <dd className="font-medium">
                                     {formatDays(leave.requested_days)}
                                     {leave.consumed_days !== null && leave.consumed_days !== leave.requested_days && ` (réellement pris : ${formatDays(leave.consumed_days)})`}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt className="text-slate-500">Reprise du travail</dt>
+                                <dd className="font-medium">{leave.return_date ? formatDate(leave.return_date) : '—'}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-slate-500">Intérim assuré par</dt>
+                                <dd className="font-medium">
+                                    {leave.interim ? `${leave.interim.prenom} ${leave.interim.nom}` : '—'}
+                                    {leave.interim && <span className="block text-xs font-normal text-slate-500">{[leave.interim.position, leave.interim.department?.name].filter(Boolean).join(' · ')}</span>}
                                 </dd>
                             </div>
                         </>

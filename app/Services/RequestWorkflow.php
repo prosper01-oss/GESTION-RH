@@ -288,6 +288,7 @@ class RequestWorkflow
         }
 
         $this->ensureNoticeRespected($request);
+        $this->ensureReturnAndInterim($request);
         $this->scheduleAttachment($request);
         $this->balances->ensureRequestable($request);
     }
@@ -317,6 +318,32 @@ class RequestWorkflow
                 $noticeDays,
             )]);
         }
+    }
+
+    /**
+     * Date de reprise et intérim obligatoires (y compris pour un brouillon antérieur à ces champs) ;
+     * l'intérimaire doit être présent pendant tout le congé.
+     */
+    private function ensureReturnAndInterim(EmployeeRequest $request): void
+    {
+        $detail = $request->leaveDetail;
+        $errors = [];
+
+        if ($detail->return_date === null) {
+            $errors['return_date'] = 'Indiquez la date de reprise du travail.';
+        } elseif ($detail->return_date->lt($detail->end_date) || ($detail->return_date->equalTo($detail->end_date) && ! $detail->ends_morning)) {
+            $errors['return_date'] = 'La date de reprise doit suivre le dernier jour de congé.';
+        }
+
+        if ($detail->interim_employee_id === null) {
+            $errors['interim_employee_id'] = "Choisissez l'agent qui assure l'intérim du poste.";
+        }
+
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
+
+        $this->overlaps->ensureInterimAvailable($request);
     }
 
     /**

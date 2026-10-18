@@ -5,10 +5,11 @@ import Button from '../../components/Button';
 import EmployeePicker from '../../components/EmployeePicker';
 import Field from '../../components/Field';
 import LeaveRuleHints from '../../components/LeaveRuleHints';
+import ReturnAndInterimFields, { suggestedReturnDate } from '../../components/ReturnAndInterimFields';
 import api, { errorMessage, validationErrors } from '../../services/api';
 import { countingModeLabels, formatDays } from '../../services/labels';
 
-const emptyForm = { leave_type_id: '', start_date: '', end_date: '', starts_afternoon: false, ends_morning: false, is_urgent: false, reason: '' };
+const emptyForm = { leave_type_id: '', start_date: '', end_date: '', starts_afternoon: false, ends_morning: false, return_date: '', interim: null, interim_employee_id: '', is_urgent: false, reason: '' };
 
 /**
  * Formulaire RH : créer une demande de congé pour n'importe quel agent.
@@ -89,6 +90,11 @@ export default function CongeRHForm() {
         }
     }
 
+    // Date de reprise proposée d'après le dernier jour, tant que l'utilisateur ne l'a pas modifiée.
+    useEffect(() => {
+        setForm((current) => (current.return_date_touched ? current : { ...current, return_date: suggestedReturnDate(current.end_date, current.ends_morning) }));
+    }, [form.end_date, form.ends_morning]);
+
     const update = (event) => setForm({ ...form, [event.target.name]: event.target.value });
     const check = (event) => setForm({ ...form, [event.target.name]: event.target.checked });
 
@@ -136,6 +142,7 @@ export default function CongeRHForm() {
                         </label>
                     )}
                 </div>
+                <ReturnAndInterimFields form={form} setForm={setForm} errors={errors} />
                 <LeaveRuleHints leaveType={selectedType} form={form} setForm={setForm} />
                 <div className="sm:col-span-2">
                     <Field label={form.is_urgent ? "Motif de l'urgence (obligatoire)" : 'Motif (facultatif)'} name="reason" as="textarea" rows={3} required={form.is_urgent} value={form.reason} onChange={update} error={errors.reason} />

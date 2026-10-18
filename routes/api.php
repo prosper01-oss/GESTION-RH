@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Admin\UserPasswordResetController;
 use App\Http\Controllers\Api\Admin\UserRoleController;
 use App\Http\Controllers\Api\ApprovalController;
+use App\Http\Controllers\Api\ColleagueController;
 use App\Http\Controllers\Api\DelegationController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\EmployeeController;
@@ -66,6 +67,7 @@ Route::middleware(['auth:sanctum', EnsureAccountIsUsable::class])->group(functio
 
     Route::apiResource('departments', DepartmentController::class)->except('destroy');
 
+    Route::get('/colleagues', [ColleagueController::class, 'index'])->name('colleagues.index');
     Route::get('/leave-types', [LeaveTypeController::class, 'index'])->name('leave-types.index');
     Route::get('/leave-days/count', [LeaveDayCountController::class, 'show'])->name('leave-days.count');
     Route::get('/leave-balances/me', [LeaveBalanceController::class, 'mine'])->name('leave-balances.mine');

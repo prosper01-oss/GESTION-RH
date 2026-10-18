@@ -5,6 +5,7 @@ namespace App\Services\Documents;
 use App\Enums\RequestStatus;
 use App\Enums\RequestType;
 use App\Models\EmployeeRequest;
+use App\Models\LeaveRequestDetail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -56,6 +57,10 @@ class RequestDocument
                 'Du' => $detail->start_date->format('d/m/Y').($detail->starts_afternoon ? ' (après-midi)' : ''),
                 'Au' => $detail->end_date->format('d/m/Y').($detail->ends_morning ? ' (matin)' : ''),
                 'Nombre de jours' => $this->number((float) $detail->requested_days).' jour(s)',
+                'Reprise du travail' => $this->returnDate($detail),
+                'Intérim assuré par' => $detail->interim
+                    ? "{$detail->interim->prenom} {$detail->interim->nom} ({$detail->interim->matricule}, {$detail->interim->position})"
+                    : '—',
             ];
             if ($detail->consumed_days !== null) {
                 $rows['Jours réellement pris'] = $this->number((float) $detail->consumed_days).' jour(s)';
@@ -90,6 +95,20 @@ class RequestDocument
         }
 
         return $rows;
+    }
+
+    /**
+     * Date de reprise ; « après-midi » quand le congé s'arrête au matin du même jour.
+     */
+    private function returnDate(LeaveRequestDetail $detail): string
+    {
+        if ($detail->return_date === null) {
+            return '—';
+        }
+
+        $sameDay = $detail->ends_morning && $detail->return_date->equalTo($detail->end_date);
+
+        return $detail->return_date->format('d/m/Y').($sameDay ? ' (après-midi)' : '');
     }
 
     private function number(float $value): string
