@@ -6,6 +6,7 @@ use App\Enums\ContractType;
 use App\Models\AuditLog;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Services\LeaveBalanceService;
 use Carbon\CarbonImmutable;
 use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Support\Facades\DB;
@@ -23,10 +24,13 @@ class EmployeeImporter
 
     public const REQUIRED = ['matricule', 'nom', 'prenom', 'service', 'fonction', 'date_embauche', 'type_contrat'];
 
-    public function __construct(private CsvReader $reader) {}
+    public function __construct(
+        private CsvReader $reader,
+        private LeaveBalanceService $balances,
+    ) {}
 
     /**
-     * @return array{rows: int, created: int, new_departments: list<string>, errors: list<array{line: int, messages: list<string>}>}
+     * @return array{rows: int, created: int, leave_months_credited: int, new_departments: list<string>, errors: list<array{line: int, messages: list<string>}>}
      */
     public function import(string $path, bool $dryRun): array
     {
@@ -72,7 +76,7 @@ class EmployeeImporter
         $newDepartments = collect($prepared)->pluck('service')->unique(fn ($name) => mb_strtolower($name))
             ->reject(fn ($name) => $existingDepartments->has(mb_strtolower($name)))->values()->all();
 
-        $result = ['rows' => count($rows), 'created' => 0, 'new_departments' => $newDepartments, 'errors' => $errors];
+        $result = ['rows' => count($rows), 'created' => 0, 'leave_months_credited' => 0, 'new_departments' => $newDepartments, 'errors' => $errors];
         if ($dryRun || $errors !== []) {
             return $result;
         }
@@ -84,7 +88,7 @@ class EmployeeImporter
             }
 
             foreach ($prepared as $values) {
-                Employee::create([
+                $employee = Employee::create([
                     'matricule' => $values['matricule'],
                     'nom' => $values['nom'],
                     'prenom' => $values['prenom'],
@@ -96,6 +100,8 @@ class EmployeeImporter
                     'email_pro' => $values['email'] ?? null ?: null,
                 ]);
                 $result['created']++;
+                // Droits déjà acquis cette année, crédités dès l'import (comme à la création d'une fiche).
+                $result['leave_months_credited'] += $this->balances->accrueCurrentYearFor($employee->fresh());
             }
 
             AuditLog::record('employees.imported', newValues: ['created' => $result['created'], 'new_departments' => $newDepartments]);

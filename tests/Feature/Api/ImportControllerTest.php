@@ -35,6 +35,20 @@ class ImportControllerTest extends TestCase
         $this->assertDatabaseHas('departments', ['name' => 'Laboratoire']);
     }
 
+    public function test_imported_employees_receive_the_leave_already_earned_this_year(): void
+    {
+        $this->travelTo(now()->setDate(2026, 10, 18));
+        LeaveType::factory()->withPolicy()->create();
+        $csv = "matricule;nom;prenom;service;fonction;date_embauche;type_contrat\n"
+            ."OMIT-001;Rasoanaivo;Hery;Laboratoire;Infirmier;01/03/2020;cdi\n"
+            ."OMIT-002;Rabe;Fanja;Laboratoire;Laborantine;15/06/2026;cdd\n";
+
+        $this->actingAs($this->userWithRole(RoleName::RessourcesHumaines))->post('/api/v1/employees/import', ['file' => $this->csv($csv)])
+            ->assertOk()
+            ->assertJsonPath('data.created', 2)
+            ->assertJsonPath('data.leave_months_credited', 12);
+    }
+
     public function test_one_invalid_line_blocks_the_whole_import_and_is_reported(): void
     {
         Employee::factory()->create(['matricule' => 'OMIT-009']);

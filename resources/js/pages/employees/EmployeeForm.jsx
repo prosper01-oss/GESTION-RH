@@ -54,7 +54,7 @@ export default function EmployeeForm() {
 
         try {
             const { data } = id ? await api.put(`/employees/${id}`, form) : await api.post('/employees', form);
-            navigate(`/personnel/${data.data.id}`);
+            navigate(`/personnel/${data.data.id}`, id ? undefined : { state: { leaveMonthsCredited: data.leave_months_credited ?? 0 } });
         } catch (error) {
             setErrors(validationErrors(error));
             setMessage(error.response?.status === 422 ? 'Corrigez les champs signalés.' : errorMessage(error));

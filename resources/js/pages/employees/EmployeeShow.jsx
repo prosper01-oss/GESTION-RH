@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import Alert from '../../components/Alert';
 import BalanceAdjustmentForm from '../../components/BalanceAdjustmentForm';
 import Button from '../../components/Button';
@@ -13,7 +13,15 @@ export default function EmployeeShow() {
     const { can } = useAuth();
     const [employee, setEmployee] = useState(null);
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+    const location = useLocation();
+    const credited = location.state?.leaveMonthsCredited;
+    const [success, setSuccess] = useState(
+        credited === undefined
+            ? ''
+            : credited > 0
+              ? `Fiche créée. ${credited} mois de congés déjà acquis cette année ont été crédités automatiquement. Ajoutez par une correction le solde des années précédentes s'il y en a un.`
+              : "Fiche créée. Aucun mois complet n'est encore acquis cette année : les congés seront crédités le 1er de chaque mois.",
+    );
     const [busy, setBusy] = useState(false);
     const [photoVersion, setPhotoVersion] = useState('');
     const [balancesVersion, setBalancesVersion] = useState(0);

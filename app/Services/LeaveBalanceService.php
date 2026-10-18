@@ -456,6 +456,54 @@ class LeaveBalanceService
     }
 
     /**
+     * À la création d'une fiche : crédite les droits déjà acquis pendant l'année en cours,
+     * mois par mois (en poste au 1er du mois), jusqu'au mois écoulé ; droits annuels compris
+     * si l'agent était en poste au 1er janvier. Les années précédentes relèvent de la reprise
+     * des soldes par les RH. Sans effet sur un mois déjà crédité.
+     *
+     * @return int Nombre d'acquisitions créées.
+     */
+    public function accrueCurrentYearFor(Employee $employee): int
+    {
+        if ($employee->status !== EmployeeStatus::Actif) {
+            return 0;
+        }
+
+        $firstOfYear = CarbonImmutable::now()->startOfYear();
+        $lastMonth = CarbonImmutable::now()->startOfMonth()->subMonth();
+        $hireDate = CarbonImmutable::parse($employee->hire_date->toDateString());
+        $created = 0;
+
+        foreach (LeaveType::query()->active()->where('has_balance', true)->get() as $leaveType) {
+            $annualPolicy = $leaveType->policyAt($firstOfYear);
+            if ($annualPolicy?->accrual_rule === AccrualRule::Annuelle && $hireDate->lte($firstOfYear)) {
+                $entitlement = $this->cappedEntitlement($employee, $leaveType, (float) $annualPolicy->annual_entitlement);
+                if ($entitlement > 0) {
+                    $created += (int) $this->creditOnce($employee, $leaveType, $firstOfYear->year, (string) $firstOfYear->year, $entitlement, "Droits annuels {$firstOfYear->year}");
+                }
+            }
+
+            for ($month = $firstOfYear; $month->lte($lastMonth); $month = $month->addMonth()) {
+                $policy = $leaveType->policyAt($month);
+                if ($policy?->accrual_rule !== AccrualRule::Mensuelle || $hireDate->gt($month)) {
+                    continue;
+                }
+
+                $entitlement = $this->cappedEntitlement($employee, $leaveType, $policy->monthlyEntitlement());
+                if ($entitlement <= 0) {
+                    continue;
+                }
+
+                $created += (int) $this->creditOnce(
+                    $employee, $leaveType, $month->year, $month->format('Y-m'), $entitlement, 'Acquisition du mois '.$month->format('m/Y'),
+                );
+            }
+        }
+
+        return $created;
+    }
+
+    /**
      * @return Collection<int, Employee>
      */
     private function eligibleEmployees(CarbonImmutable $date): Collection

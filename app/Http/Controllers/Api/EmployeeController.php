@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateEmployeeRequest;
 use App\Http\Resources\EmployeeResource;
 use App\Models\AuditLog;
 use App\Models\Employee;
+use App\Services\LeaveBalanceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -43,13 +44,17 @@ class EmployeeController extends Controller
         return EmployeeResource::collection($employees);
     }
 
-    public function store(StoreEmployeeRequest $request): JsonResponse
+    public function store(StoreEmployeeRequest $request, LeaveBalanceService $balances): JsonResponse
     {
         $employee = Employee::create($request->validated());
 
         AuditLog::record('employee.created', $employee, newValues: $request->validated());
 
+        // Les congés déjà acquis cette année s'affichent dès la création de la fiche.
+        $credited = $balances->accrueCurrentYearFor($employee->fresh());
+
         return EmployeeResource::make($employee->load('department'))
+            ->additional(['leave_months_credited' => $credited])
             ->response()
             ->setStatusCode(201);
     }

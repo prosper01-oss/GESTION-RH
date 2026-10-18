@@ -20,6 +20,8 @@ Ce guide couvre le travail des RH dans l'application : dossiers du personnel, so
 
 Le menu **Personnel** permet de rechercher par nom ou matricule et de filtrer par service et par statut. Depuis une fiche, vous pouvez la modifier, ajouter une photo, la désactiver ou consulter et corriger les soldes.
 
+À la création d'une fiche, à la main ou par import, les congés déjà acquis **cette année** sont crédités automatiquement : 2,5 jours par mois complet travaillé, de janvier (ou du premier mois après l'embauche) jusqu'au mois dernier. Le solde des années précédentes, lui, se saisit par une correction.
+
 Une fiche n'est jamais supprimée : on la **désactive**. Le compte de connexion de l'agent est alors désactivé lui aussi.
 
 **Corriger un solde** : la correction exige un motif, et elle reste visible dans l'historique. Mettez un nombre négatif pour retirer des jours.

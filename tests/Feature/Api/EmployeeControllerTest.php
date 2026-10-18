@@ -6,7 +6,9 @@ use App\Enums\RoleName;
 use App\Models\AuditLog;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\LeaveType;
 use App\Models\User;
+use App\Services\LeaveBalanceService;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -105,6 +107,34 @@ class EmployeeControllerTest extends TestCase
         $employee = Employee::where('matricule', 'OMIT-00125')->sole();
         $this->assertSame('Rasoanaivo', $employee->nom);
         $this->assertDatabaseHas('audit_logs', ['action' => 'employee.created', 'entity_id' => $employee->id, 'user_id' => $rh->id]);
+    }
+
+    /**
+     * @return array<string, array{string, int, float}>
+     */
+    public static function hireDates(): array
+    {
+        return [
+            'embauché avant l\'année : janvier à septembre' => ['2020-03-01', 9, 22.5],
+            'embauché le 15 juin : juillet à septembre' => ['2026-06-15', 3, 7.5],
+            'embauché le 1er juin : juin compris' => ['2026-06-01', 4, 10.0],
+            'embauché ce mois-ci : rien encore' => ['2026-10-05', 0, 0.0],
+        ];
+    }
+
+    #[DataProvider('hireDates')]
+    public function test_creating_an_employee_credits_the_leave_already_earned_this_year(string $hireDate, int $months, float $available): void
+    {
+        $this->travelTo(now()->setDate(2026, 10, 18));
+        $annualLeave = LeaveType::factory()->withPolicy(['annual_entitlement' => 30])->create();
+        $department = Department::factory()->create();
+
+        $response = $this->actingAs($this->userWithRole(RoleName::RessourcesHumaines))
+            ->postJson('/api/v1/employees', ['hire_date' => $hireDate] + $this->validPayload($department));
+
+        $response->assertCreated()->assertJsonPath('leave_months_credited', $months);
+        $employee = Employee::where('matricule', 'OMIT-00125')->sole();
+        $this->assertSame($available, app(LeaveBalanceService::class)->totalAvailableAllYears($employee, $annualLeave));
     }
 
     public function test_medecin_chef_gets_403_when_creating_an_employee(): void
