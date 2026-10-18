@@ -10,7 +10,7 @@ const shortcuts = [
     { to: '/demandes/nouvelle', label: 'Demander un congé', description: 'Saisir et envoyer une demande', employeeOnly: true },
     { to: '/demandes/permission/nouvelle', label: 'Demander une permission', description: 'Absence de quelques heures ou jours', employeeOnly: true },
     { to: '/demandes/sortie/nouvelle', label: 'Billet de sortie', description: 'Sortie pendant les heures de service', employeeOnly: true },
-    { to: '/a-traiter', label: 'Demandes à traiter', description: 'Contrôle, décision et finalisation', anyPermission: ['requests.review', 'requests.decide'] },
+    { to: '/a-traiter', label: 'Demandes à traiter', description: 'Contrôle, décision, sorties à valider', anyPermission: ['requests.review', 'requests.decide'], orExitApprover: true },
     { to: '/personnel', label: 'Annuaire du personnel', description: 'Rechercher et consulter les fiches', permission: 'employees.view' },
     { to: '/personnel/nouveau', label: 'Nouvel employé', description: 'Créer une fiche du personnel', permission: 'employees.manage' },
     { to: '/services', label: 'Services', description: 'Liste des services et effectifs' },
@@ -58,7 +58,7 @@ export default function Dashboard() {
                     .filter(
                         (item) =>
                             (!item.permission || can(item.permission)) &&
-                            (!item.anyPermission || item.anyPermission.some((permission) => can(permission))) &&
+                            (!item.anyPermission || item.anyPermission.some((permission) => can(permission)) || (item.orExitApprover && user.approves_exits)) &&
                             (!item.employeeOnly || user.employee_id),
                     )
                     .map((item) => (

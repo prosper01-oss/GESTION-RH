@@ -187,6 +187,7 @@ export default function RequestShow() {
                         {summary.title}
                     </h1>
                     <RequestStatusBadge status={request.status} label={request.status_label} />
+                    {leave?.is_urgent && <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 ring-1 ring-red-600/20 ring-inset">Urgence</span>}
                     <span className="font-mono text-xs text-slate-500">{request.reference ?? 'Brouillon'}</span>
                 </div>
                 <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
@@ -270,6 +271,12 @@ export default function RequestShow() {
             <section className="rounded-lg border border-slate-200 bg-white p-6 print:hidden">
                 <h2 className="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase">Justificatifs</h2>
                 {request.attachments.length === 0 && <p className="text-sm text-slate-500">Aucun justificatif.</p>}
+                {leave?.attachment_due_at && request.attachments.length === 0 && (
+                    <p className={`mb-2 text-sm ${leave.attachment_overdue ? 'font-medium text-red-700' : 'text-amber-700'}`}>
+                        {leave.attachment_overdue ? 'En retard : justificatif attendu avant le ' : 'Justificatif attendu avant le '}
+                        {formatDateTime(leave.attachment_due_at)}.
+                    </p>
+                )}
                 <ul className="flex flex-col gap-2 text-sm">
                     {request.attachments.map((attachment) => (
                         <li key={attachment.id} className="flex flex-wrap items-center gap-3">
@@ -289,7 +296,7 @@ export default function RequestShow() {
                         </li>
                     ))}
                 </ul>
-                {request.can_edit && (
+                {request.can_add_attachment && (
                     <label className={`mt-3 inline-flex cursor-pointer rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 ${busy ? 'pointer-events-none opacity-50' : ''}`}>
                         Ajouter un justificatif (PDF, JPG, PNG — 5 Mo max.)
                         <input type="file" accept="application/pdf,image/jpeg,image/png" className="sr-only" onChange={upload} disabled={busy} />

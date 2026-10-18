@@ -39,6 +39,8 @@ class SaveLeaveTypeRequest extends FormRequest
             'requires_attachment' => ['required', 'boolean'],
             'is_medical' => ['required', 'boolean'],
             'allows_half_day' => ['required', 'boolean'],
+            'min_notice_days' => ['sometimes', 'integer', 'min:0', 'max:365'],
+            'attachment_deadline_hours' => ['nullable', 'integer', 'min:1', 'max:720'],
             'is_active' => ['required', 'boolean'],
             'policy' => ['required', 'array'],
             'policy.accrual_rule' => ['required', Rule::enum(AccrualRule::class)],
@@ -60,6 +62,8 @@ class SaveLeaveTypeRequest extends FormRequest
             'policy.counting_mode' => 'mode de décompte',
             'policy.carry_over_max' => 'report maximal',
             'policy.effective_from' => "date d'effet",
+            'min_notice_days' => 'délai de dépôt minimal',
+            'attachment_deadline_hours' => 'délai du justificatif',
         ];
     }
 

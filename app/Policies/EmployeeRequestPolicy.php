@@ -6,6 +6,7 @@ use App\Enums\PermissionName;
 use App\Enums\RequestStatus;
 use App\Models\EmployeeRequest;
 use App\Models\User;
+use App\Services\ExitPassApprover;
 
 class EmployeeRequestPolicy
 {
@@ -19,7 +20,9 @@ class EmployeeRequestPolicy
 
     public function view(User $user, EmployeeRequest $request): bool
     {
-        return $request->isOwnedBy($user) || $this->viewAny($user);
+        return $request->isOwnedBy($user)
+            || $this->viewAny($user)
+            || app(ExitPassApprover::class)->canApprove($user, $request);
     }
 
     /**
@@ -36,6 +39,26 @@ class EmployeeRequestPolicy
         return $request->isOwnedBy($user) && $request->status->isEditableByOwner();
     }
 
+    /**
+     * Ajout d'un justificatif : tant que la demande est modifiable, ou après l'envoi tant qu'un
+     * justificatif est attendu dans un délai (R6) et que la demande n'est pas close.
+     */
+    public function addAttachment(User $user, EmployeeRequest $request): bool
+    {
+        if (! $request->isOwnedBy($user)) {
+            return false;
+        }
+
+        if ($request->status->isEditableByOwner()) {
+            return true;
+        }
+
+        $request->loadMissing('leaveDetail');
+
+        return $request->leaveDetail?->attachment_due_at !== null
+            && ! in_array($request->status, [RequestStatus::Refusee, RequestStatus::Annulee, RequestStatus::Terminee], true);
+    }
+
     public function delete(User $user, EmployeeRequest $request): bool
     {
         return $request->isOwnedBy($user) && $request->status === RequestStatus::Brouillon;
@@ -47,5 +70,14 @@ class EmployeeRequestPolicy
     public function process(User $user, EmployeeRequest $request): bool
     {
         return ! $request->isOwnedBy($user) && $user->hasPermission(PermissionName::ReviewRequests);
+    }
+
+    /**
+     * Départ et retour d'une sortie : les RH ou le valideur de la sortie (R7).
+     */
+    public function recordExit(User $user, EmployeeRequest $request): bool
+    {
+        return ! $request->isOwnedBy($user)
+            && ($user->hasPermission(PermissionName::ReviewRequests) || app(ExitPassApprover::class)->canApprove($user, $request));
     }
 }

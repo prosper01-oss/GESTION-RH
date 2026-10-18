@@ -55,7 +55,14 @@ class EmployeeRequestResource extends JsonResource
                 'department' => $this->employee->relationLoaded('department') ? $this->employee->department?->name : null,
             ]),
             'leave' => $this->when($detail !== null, fn () => [
-                'leave_type' => ['id' => $detail->leaveType->id, 'name' => $detail->leaveType->name, 'requires_attachment' => $detail->leaveType->requires_attachment, 'allows_half_day' => $detail->leaveType->allows_half_day],
+                'leave_type' => [
+                    'id' => $detail->leaveType->id,
+                    'name' => $detail->leaveType->name,
+                    'requires_attachment' => $detail->leaveType->requires_attachment,
+                    'attachment_deadline_hours' => $detail->leaveType->attachment_deadline_hours,
+                    'allows_half_day' => $detail->leaveType->allows_half_day,
+                    'min_notice_days' => $detail->leaveType->min_notice_days,
+                ],
                 'start_date' => $detail->start_date->toDateString(),
                 'starts_afternoon' => $detail->starts_afternoon,
                 'end_date' => $detail->end_date->toDateString(),
@@ -64,6 +71,12 @@ class EmployeeRequestResource extends JsonResource
                 'consumed_days' => $detail->consumed_days === null ? null : (float) $detail->consumed_days,
                 'actual_end_date' => $detail->actual_end_date?->toDateString(),
                 'reason' => $detail->reason,
+                'is_urgent' => $detail->is_urgent,
+                // R6 : justificatif attendu après l'envoi, et retard éventuel.
+                'attachment_due_at' => $detail->attachment_due_at,
+                'attachment_overdue' => $detail->attachment_due_at !== null
+                    && $detail->attachment_due_at->isPast()
+                    && $this->relationLoaded('attachments') && $this->attachments->isEmpty(),
             ]),
             'permission' => $this->when($this->relationLoaded('permissionDetail') && $this->permissionDetail !== null, fn () => [
                 'permission_type' => ['id' => $this->permissionDetail->permissionType->id, 'name' => $this->permissionDetail->permissionType->name, 'requires_attachment' => $this->permissionDetail->permissionType->requires_attachment],
@@ -83,7 +96,7 @@ class EmployeeRequestResource extends JsonResource
             ]),
             'can_record_exit' => $this->when(
                 $this->relationLoaded('exitDetail') && $this->exitDetail !== null,
-                fn () => $this->status === RequestStatus::Finalisee && ! $this->isOwnedBy($user) && $user->hasPermission(PermissionName::ReviewRequests),
+                fn () => in_array($this->status, [RequestStatus::Approuvee, RequestStatus::Finalisee], true) && $user->can('recordExit', $this->resource),
             ),
             'attachments' => $this->whenLoaded('attachments', fn () => $this->attachments->map(fn (RequestAttachment $attachment): array => [
                 'id' => $attachment->id,
@@ -105,6 +118,7 @@ class EmployeeRequestResource extends JsonResource
             ])),
             'available_transitions' => app(RequestWorkflow::class)->availableTransitions($this->resource, $user),
             'can_edit' => $user->can('update', $this->resource),
+            'can_add_attachment' => $user->can('addAttachment', $this->resource),
             'can_delete' => $user->can('delete', $this->resource),
             'can_interrupt' => $user->can('process', $this->resource) && $this->status === RequestStatus::Finalisee && $detail?->start_date->isPast(),
             // Solde de l'agent, pour l'instruction par les RH et la décision du Médecin-Chef.

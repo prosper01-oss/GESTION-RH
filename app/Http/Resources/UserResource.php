@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\User;
+use App\Services\ExitPassApprover;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -28,6 +29,8 @@ class UserResource extends JsonResource
             'employee_id' => $this->employee_id,
             'roles' => $this->whenLoaded('roles', fn () => $this->roles->pluck('name')),
             'permissions' => $this->when($this->relationLoaded('roles'), fn () => $this->effectivePermissionNames()),
+            // R7 : responsable d'un service ou Médecin-Chef, il voit la file « Sorties à valider ».
+            'approves_exits' => $this->when($this->relationLoaded('roles'), fn () => app(ExitPassApprover::class)->approvesExits($this->resource)),
         ];
     }
 }

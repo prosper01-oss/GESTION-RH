@@ -41,6 +41,17 @@ return [
 
     'max_balance_days' => (int) env('OMIT_MAX_BALANCE_DAYS', 90),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Billets de sortie
+    |--------------------------------------------------------------------------
+    |
+    | exit_pass_max_hours : durée maximale d'une sortie (règle R7 : 2 h).
+    |
+    */
+
+    'exit_pass_max_hours' => (float) env('OMIT_EXIT_PASS_MAX_HOURS', 2),
+
     'sms_gateway' => env('OMIT_SMS_GATEWAY', LogSmsGateway::class),
 
     /*

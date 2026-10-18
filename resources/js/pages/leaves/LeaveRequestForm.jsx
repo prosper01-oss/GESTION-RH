@@ -3,10 +3,11 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import Alert from '../../components/Alert';
 import Button from '../../components/Button';
 import Field from '../../components/Field';
+import LeaveRuleHints from '../../components/LeaveRuleHints';
 import api, { errorMessage, validationErrors } from '../../services/api';
-import { formatDays } from '../../services/labels';
+import { countingModeLabels, formatDays } from '../../services/labels';
 
-const emptyForm = { leave_type_id: '', start_date: '', end_date: '', starts_afternoon: false, ends_morning: false, reason: '' };
+const emptyForm = { leave_type_id: '', start_date: '', end_date: '', starts_afternoon: false, ends_morning: false, is_urgent: false, reason: '' };
 
 /**
  * Création ou correction d'une demande de congé, avec aperçu du nombre de jours calculé par le serveur.
@@ -40,6 +41,7 @@ export default function LeaveRequestForm() {
                         end_date: leave.end_date,
                         starts_afternoon: leave.starts_afternoon,
                         ends_morning: leave.ends_morning,
+                        is_urgent: leave.is_urgent,
                         reason: leave.reason ?? '',
                     });
                 })
@@ -109,7 +111,6 @@ export default function LeaveRequestForm() {
                             </option>
                         ))}
                     </Field>
-                    {selectedType?.requires_attachment && <p className="mt-1 text-xs text-amber-700">Un justificatif sera demandé avant l'envoi.</p>}
                 </div>
                 <div className="flex flex-col gap-2">
                     <Field label="Premier jour" name="start_date" type="date" required value={form.start_date} onChange={update} error={errors.start_date} />
@@ -129,15 +130,16 @@ export default function LeaveRequestForm() {
                         </label>
                     )}
                 </div>
+                <LeaveRuleHints leaveType={selectedType} form={form} setForm={setForm} />
                 <div className="sm:col-span-2">
-                    <Field label="Motif (facultatif)" name="reason" as="textarea" rows={3} value={form.reason} onChange={update} error={errors.reason} />
+                    <Field label={form.is_urgent ? "Motif de l'urgence (obligatoire)" : 'Motif (facultatif)'} name="reason" as="textarea" rows={3} required={form.is_urgent} value={form.reason} onChange={update} error={errors.reason} />
                 </div>
             </section>
 
             <div className="flex flex-wrap gap-6 rounded-lg border border-sky-100 bg-sky-50 px-4 py-3 text-sm text-sky-900">
                 <p>
                     Jours décomptés : <strong>{preview ? formatDays(preview.days) : '—'}</strong>
-                    {preview && <span className="text-sky-700"> ({preview.counting_mode === 'working' ? 'jours ouvrés' : 'jours calendaires'})</span>}
+                    {preview && <span className="text-sky-700"> ({(countingModeLabels[preview.counting_mode] ?? preview.counting_mode).toLowerCase()})</span>}
                 </p>
                 {balance && (
                     <p>

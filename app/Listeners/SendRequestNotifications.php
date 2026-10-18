@@ -3,9 +3,12 @@
 namespace App\Listeners;
 
 use App\Enums\RequestStatus as S;
+use App\Enums\RequestType;
 use App\Events\RequestTransitioned;
+use App\Models\EmployeeRequest;
 use App\Models\User;
 use App\Notifications\RequestUpdate;
+use App\Services\ExitPassApprover;
 use App\Services\RequestRecipients;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Notification;
@@ -15,7 +18,10 @@ use Illuminate\Support\Facades\Notification;
  */
 class SendRequestNotifications
 {
-    public function __construct(private RequestRecipients $recipients) {}
+    public function __construct(
+        private RequestRecipients $recipients,
+        private ExitPassApprover $exitPassApprover,
+    ) {}
 
     public function handle(RequestTransitioned $event): void
     {
@@ -25,6 +31,12 @@ class SendRequestNotifications
         $type = mb_strtolower($request->request_type->label());
         $reason = $event->comment ? " Motif : {$event->comment}" : '';
         $owner = $this->recipients->owner($request);
+
+        if ($request->request_type === RequestType::Sortie) {
+            $this->exitPass($event, $request, $owner, $reference, $agent, $reason);
+
+            return;
+        }
 
         match ($event->to) {
             S::Soumise => $this->send($this->recipients->reviewers($request), $request,
@@ -45,6 +57,32 @@ class SendRequestNotifications
                 : null,
             default => null,
         };
+    }
+
+    /**
+     * Billets de sortie (R7) : le chef direct valide, l'agent est prévenu, les RH sont informées.
+     */
+    private function exitPass(RequestTransitioned $event, EmployeeRequest $request, ?User $owner, string $reference, string $agent, string $reason): void
+    {
+        match ($event->to) {
+            S::Soumise => $this->send($this->exitPassApprover->approvers($request), $request,
+                'Sortie à valider', "{$agent} demande un billet de sortie ({$reference}) à valider.", sms: true),
+            S::Approuvee => $this->exitPassApproved($owner, $request, $reference, $agent),
+            S::ACorriger => $this->send($owner, $request,
+                'Sortie à corriger', "Votre billet de sortie {$reference} est à corriger.{$reason}", sms: true),
+            S::Refusee => $this->send($owner, $request,
+                'Sortie refusée', "Votre billet de sortie {$reference} est refusé.{$reason}", sms: true),
+            S::Annulee => in_array($event->from, [S::Approuvee, S::Finalisee], true) && $event->actorId !== $owner?->id
+                ? $this->send($owner, $request, 'Sortie annulée', "Votre billet de sortie {$reference} a été annulé par les RH.{$reason}", sms: true)
+                : null,
+            default => null,
+        };
+    }
+
+    private function exitPassApproved(?User $owner, EmployeeRequest $request, string $reference, string $agent): void
+    {
+        $this->send($owner, $request, 'Sortie autorisée', "Votre billet de sortie {$reference} est autorisé.", sms: true);
+        $this->send($this->recipients->reviewers($request), $request, 'Sortie autorisée', "Pour information : la sortie {$reference} de {$agent} est autorisée.");
     }
 
     private function approved(?User $owner, $request, string $type, string $reference, string $agent): void

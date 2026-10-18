@@ -22,12 +22,13 @@ class LeaveSettingsSeeder extends Seeder
     {
         $types = [
             [
-                'type' => ['code' => 'CA', 'name' => 'Congé annuel', 'is_paid' => true, 'has_balance' => true, 'allows_half_day' => true],
-                // Hypothèse : 2,5 jours calendaires par mois de service (Code du travail, à vérifier).
-                'policy' => ['accrual_rule' => AccrualRule::Mensuelle, 'annual_entitlement' => 30, 'counting_mode' => CountingMode::Calendaire, 'carry_over_max' => null],
+                // Règles OMIT : R1 2,5 jours par mois, R3 jours fériés non décomptés, R8 dépôt 15 jours à l'avance.
+                'type' => ['code' => 'CA', 'name' => 'Congé annuel', 'is_paid' => true, 'has_balance' => true, 'allows_half_day' => true, 'min_notice_days' => 15],
+                'policy' => ['accrual_rule' => AccrualRule::Mensuelle, 'annual_entitlement' => 30, 'counting_mode' => CountingMode::CalendaireHorsFeries, 'carry_over_max' => null],
             ],
             [
-                'type' => ['code' => 'CM', 'name' => 'Congé de maladie', 'is_paid' => true, 'has_balance' => false, 'requires_attachment' => true, 'is_medical' => true],
+                // R6 : justificatif à fournir sous 48 h après le premier jour d'arrêt.
+                'type' => ['code' => 'CM', 'name' => 'Congé de maladie', 'is_paid' => true, 'has_balance' => false, 'requires_attachment' => true, 'is_medical' => true, 'attachment_deadline_hours' => 48],
                 'policy' => ['accrual_rule' => AccrualRule::Aucune, 'annual_entitlement' => 0, 'counting_mode' => CountingMode::Calendaire, 'carry_over_max' => null],
             ],
             [

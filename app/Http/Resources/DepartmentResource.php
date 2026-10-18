@@ -25,6 +25,7 @@ class DepartmentResource extends JsonResource
             'manager_employee_id' => $this->manager_employee_id,
             'manager' => $this->whenLoaded('manager', fn () => [
                 'id' => $this->manager->id,
+                'matricule' => $this->manager->matricule,
                 'nom' => $this->manager->nom,
                 'prenom' => $this->manager->prenom,
             ]),

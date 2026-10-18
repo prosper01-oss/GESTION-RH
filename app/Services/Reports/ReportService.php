@@ -56,15 +56,16 @@ class ReportService
                 ->map(fn (Department $department): array => ['name' => $department->name, 'count' => $department->employees_count])
                 ->values(),
             'pending' => [
-                'control' => EmployeeRequest::query()->whereIn('status', [RequestStatus::Soumise, RequestStatus::RenvoyeeRh])->count(),
+                'control' => EmployeeRequest::query()->where('request_type', '!=', RequestType::Sortie)->whereIn('status', [RequestStatus::Soumise, RequestStatus::RenvoyeeRh])->count(),
                 'decide' => EmployeeRequest::query()->where('status', RequestStatus::TransmiseMedecin)->count(),
-                'finalize' => EmployeeRequest::query()->where('status', RequestStatus::Approuvee)->count(),
+                'finalize' => EmployeeRequest::query()->where('request_type', '!=', RequestType::Sortie)->where('status', RequestStatus::Approuvee)->count(),
+                'exits' => EmployeeRequest::query()->where('request_type', RequestType::Sortie)->where('status', RequestStatus::Soumise)->count(),
             ],
             'leaves_granted_this_month' => $this->absenceQuery($monthStart, $monthEnd)->where('request_type', RequestType::Conge)->count(),
             'absent_today' => $this->absenceQuery($today, $today)->whereIn('request_type', [RequestType::Conge, RequestType::Permission])->distinct()->count('employee_id'),
             'exits_today' => $this->absenceQuery($today, $today)->where('request_type', RequestType::Sortie)->count(),
             'exits_in_progress' => EmployeeRequest::query()
-                ->where('status', RequestStatus::Finalisee)
+                ->whereIn('status', [RequestStatus::Approuvee, RequestStatus::Finalisee])
                 ->whereHas('exitDetail', fn ($query) => $query->whereNotNull('actual_departure_at')->whereNull('actual_return_at'))
                 ->count(),
             'requests_by_type_and_status' => $byTypeAndStatus,

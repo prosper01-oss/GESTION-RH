@@ -16,7 +16,7 @@ export default function ExitPassFollowUp() {
 
     const load = useCallback(() => {
         Promise.all([
-            api.get('/exit-passes', { params: { scope: 'all', status: 'finalisee' } }),
+            api.get('/exit-passes', { params: { scope: 'all', status: 'approuvee' } }),
             api.get('/exit-passes', { params: { scope: 'all', state: 'en_cours' } }),
         ])
             .then(([finalized, inProgress]) => {
@@ -83,7 +83,7 @@ export default function ExitPassFollowUp() {
                 </ul>
             </section>
             <section className="flex flex-col gap-2">
-                <h2 className="text-sm font-semibold tracking-wide text-slate-500 uppercase">Billets finalisés, départ non enregistré ({ready.length})</h2>
+                <h2 className="text-sm font-semibold tracking-wide text-slate-500 uppercase">Sorties autorisées, départ non enregistré ({ready.length})</h2>
                 <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white">
                     {ready.length === 0 && <li className="px-4 py-6 text-center text-sm text-slate-500">Aucun billet en attente de départ.</li>}
                     {ready.map((request) => (

@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class SaveExitPassRequest extends FormRequest
 {
@@ -27,6 +29,28 @@ class SaveExitPassRequest extends FormRequest
             'expected_return_at' => ['required', 'date', 'after:departure_at', 'before_or_equal:'.now()->addMonth()->toDateString()],
             'destination' => ['required', 'string', 'max:255'],
             'reason' => ['required', 'string', 'max:1000'],
+        ];
+    }
+
+    /**
+     * Règle R7 : une sortie dure au plus OMIT_EXIT_PASS_MAX_HOURS heures.
+     *
+     * @return array<int, callable>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                $maxHours = (float) config('omit.exit_pass_max_hours');
+                if ($maxHours <= 0 || $validator->errors()->hasAny(['departure_at', 'expected_return_at'])) {
+                    return;
+                }
+
+                $minutes = CarbonImmutable::parse($this->input('departure_at'))->diffInMinutes(CarbonImmutable::parse($this->input('expected_return_at')));
+                if ($minutes > $maxHours * 60) {
+                    $validator->errors()->add('expected_return_at', sprintf('Une sortie dure au plus %s h.', rtrim(rtrim(number_format($maxHours, 2, ',', ''), '0'), ',')));
+                }
+            },
         ];
     }
 

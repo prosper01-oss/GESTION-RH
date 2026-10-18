@@ -51,8 +51,8 @@ class ExitPassService
     {
         $detail = $request->exitDetail;
 
-        if ($request->status !== RequestStatus::Finalisee) {
-            throw new ConflictHttpException('Le départ ne peut être enregistré que sur un billet finalisé.');
+        if (! in_array($request->status, [RequestStatus::Approuvee, RequestStatus::Finalisee], true)) {
+            throw new ConflictHttpException('Le départ ne peut être enregistré que sur une sortie autorisée.');
         }
         if ($detail->actual_departure_at !== null) {
             throw new ConflictHttpException('Le départ est déjà enregistré.');

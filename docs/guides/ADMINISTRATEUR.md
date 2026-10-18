@@ -20,6 +20,8 @@ L'administrateur gère la partie technique, mais **n'a pas accès aux données d
 | Médecin-Chef | Le Médecin-Chef (en plus de « Personnel ») |
 | Administrateur | L'administrateur informatique |
 
+Le responsable d'un service n'a pas de rôle particulier : un simple compte « Personnel » suffit. Ce sont les RH qui le désignent dans l'écran **Services**, et il voit alors l'onglet « Sorties à valider ».
+
 Un compte sans matricule ne peut pas déposer de demandes.
 
 ## Opérations sur les comptes

@@ -5,7 +5,7 @@ import api from '../services/api';
  * Champ de recherche d'un agent par nom ou matricule.
  * Appelle onChange(employee) dès qu'un agent est sélectionné, ou onChange(null) si le champ est vidé.
  */
-export default function EmployeePicker({ label = 'Agent', value, onChange, error }) {
+export default function EmployeePicker({ label = 'Agent', value, onChange, error, required = true }) {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState([]);
     const [open, setOpen] = useState(false);
@@ -55,7 +55,11 @@ export default function EmployeePicker({ label = 'Agent', value, onChange, error
 
     return (
         <div ref={ref} className="relative flex flex-col gap-1">
-            {label && <label className="text-sm font-medium text-slate-700">{label} <span className="text-red-500">*</span></label>}
+            {label && (
+                <label className="text-sm font-medium text-slate-700">
+                    {label} {required && <span className="text-red-500">*</span>}
+                </label>
+            )}
             <input
                 type="text"
                 autoComplete="off"

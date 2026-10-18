@@ -11,12 +11,14 @@ import { formatDate, requestSummary, requestTypeLabels } from '../../services/la
  * Files de traitement : contrôle et finalisation (RH), décision (Médecin-Chef), et vue d'ensemble.
  */
 export default function ApprovalQueue() {
-    const { can } = useAuth();
+    const { user, can } = useAuth();
+    const seesAll = can('requests.review') || can('requests.decide');
     const tabs = [
         can('requests.review') && { key: 'control', label: 'À contrôler' },
         can('requests.decide') && { key: 'decide', label: 'À décider' },
+        user.approves_exits && { key: 'exits', label: 'Sorties à valider' },
         can('requests.review') && { key: 'finalize', label: 'À finaliser' },
-        { key: 'all', label: 'Toutes les demandes' },
+        seesAll && { key: 'all', label: 'Toutes les demandes' },
     ].filter(Boolean);
 
     const [tab, setTab] = useState(tabs[0].key);
@@ -97,6 +99,7 @@ export default function ApprovalQueue() {
                                     <p>
                                         <span className="text-xs text-slate-500">{requestTypeLabels[request.request_type]} · </span>
                                         {summary.title}
+                                        {request.leave?.is_urgent && <span className="ml-2 rounded-full bg-red-50 px-1.5 text-xs font-medium text-red-700">Urgence</span>}
                                     </p>
                                     <p className="text-xs text-slate-500">{summary.period}</p>
                                 </td>

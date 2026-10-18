@@ -47,7 +47,7 @@ class RequestController extends Controller
             ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
             ->when($all && ($filters['employee_id'] ?? null), fn ($query) => $query->where('employee_id', $filters['employee_id']))
             ->when($filters['state'] ?? null, fn ($query, string $state) => $query
-                ->where('status', RequestStatus::Finalisee)
+                ->whereIn('status', [RequestStatus::Approuvee, RequestStatus::Finalisee])
                 ->whereHas('exitDetail', fn ($query) => $query
                     ->whereNotNull('actual_departure_at')
                     ->whereNull('actual_return_at')

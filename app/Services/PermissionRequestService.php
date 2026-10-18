@@ -45,7 +45,7 @@ class PermissionRequestService
     }
 
     /**
-     * Contrôles avant envoi : justificatif, durée maximale, chevauchement avec une autre permission.
+     * Contrôles avant envoi : justificatif et durée maximale (le chevauchement est vérifié par RequestOverlapChecker).
      */
     public function checkBeforeSubmission(EmployeeRequest $request): void
     {
@@ -65,19 +65,6 @@ class PermissionRequestService
                 'La durée dépasse le maximum autorisé pour cette catégorie (%s h).',
                 rtrim(rtrim(number_format((float) $type->max_duration_hours, 2, ',', ''), '0'), ','),
             )]);
-        }
-
-        $overlapping = EmployeeRequest::query()
-            ->join('permission_request_details', 'permission_request_details.request_id', '=', 'requests.id')
-            ->where('requests.employee_id', $request->employee_id)
-            ->where('requests.id', '!=', $request->id)
-            ->whereIn('requests.status', RequestStatus::occupyingPeriod())
-            ->where('permission_request_details.start_at', '<', $detail->end_at)
-            ->where('permission_request_details.end_at', '>', $detail->start_at)
-            ->value('requests.reference');
-
-        if ($overlapping !== null) {
-            throw ValidationException::withMessages(['start_at' => "Cette période chevauche la permission {$overlapping}."]);
         }
     }
 

@@ -19,7 +19,7 @@ class RequestAttachmentController extends Controller
      */
     public function store(Request $request, EmployeeRequest $employeeRequest): JsonResponse
     {
-        Gate::authorize('update', $employeeRequest);
+        Gate::authorize('addAttachment', $employeeRequest);
 
         $request->validate([
             'file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],

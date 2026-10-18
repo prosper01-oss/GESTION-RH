@@ -13,6 +13,7 @@ Utilisez deux navigateurs différents, ou une fenêtre de navigation privée, po
 | 0.1 | Admin | Se connecter avec le compte administrateur et son mot de passe provisoire | L'application impose de choisir un nouveau mot de passe, puis affiche le tableau de bord | ☐ | |
 | 0.2 | Admin | **Comptes**, puis **Nouveau compte** : « RH Test », rôles Personnel et Ressources Humaines, sans matricule | Un mot de passe provisoire s'affiche une seule fois | ☐ | |
 | 0.3 | RH | Se connecter, changer le mot de passe. **Services** : créer « Médecine du travail » (MED) et « Laboratoire » (LAB) | Les deux services apparaissent avec un effectif de 0 | ☐ | |
+| 0.3 b | RH | Après l'étape 0.4 : **Services**, **Modifier** sur « Médecine du travail », choisir « Médecin Test » comme **responsable** | La colonne « Responsable » affiche Médecin Test ; il valide désormais les sorties du service | ☐ | |
 | 0.4 | RH | **Personnel**, puis **Nouvel employé** : créer « Agent Test » (matricule T-001, MED), « Médecin Test » (T-002, MED) et « RH Fiche » (T-003, MED) | Les trois fiches apparaissent dans l'annuaire | ☐ | |
 | 0.5 | Admin | **Comptes**, puis **Nouveau compte** : « Agent Test » (matricule T-001, rôle Personnel) et « Médecin Test » (matricule T-002, rôles Personnel et Médecin-Chef) | Comptes créés et rattachés à leur fiche ; chacun change son mot de passe à la première connexion | ☐ | |
 | 0.6 | RH | Fiche d'Agent Test, **Corriger un solde** : congé annuel, année en cours, **10** jours, motif « Solde de recette » | Le solde disponible affiche 10 j ; l'historique montre la correction avec le motif | ☐ | |
@@ -76,11 +77,26 @@ Utilisez deux navigateurs différents, ou une fenêtre de navigation privée, po
 | # | Critère | Qui | Action | Résultat attendu | OK | Remarque |
 |---|---|---|---|---|---|---|
 | 6.1 | EF-31 | Agent | **+ Permission** « Convenance personnelle » de 09 h 00 à 13 h 00 | Durée affichée : 4 h. Au-delà de 8 h, l'envoi est refusé (durée maximale) | ☐ | |
-| 6.2 | EF-40 | Agent | **+ Billet de sortie** dans une heure, retour prévu une heure après, destination et motif | Après envoi : référence `OMIT-BS-…` | ☐ | |
-| 6.3 | EF-41 | RH | Après approbation et finalisation : **Sorties**, puis **Départ** | Le billet passe dans « En cours » | ☐ | |
+| 6.2 | EF-40 | Agent | **+ Billet de sortie** dans une heure, retour prévu une heure après, destination et motif | Après envoi : référence `OMIT-BS-…` ; la notification « Sortie à valider » part au responsable du service (ou au Médecin-Chef s'il n'y en a pas) | ☐ | |
+| 6.2 b | R7 | Responsable du service | **À traiter**, onglet **Sorties à valider**, puis **Approuver** | Statut « Approuvée » sans passer par les RH ; l'agent est prévenu, les RH reçoivent « Sortie autorisée » pour information | ☐ | |
+| 6.3 | EF-41 | RH | **Sorties**, puis **Départ** | Le billet passe dans « En cours » | ☐ | |
 | 6.4 | EF-42 | RH | Attendre que l'heure de retour prévue soit dépassée | La ligne est signalée en rouge : « Retour prévu dépassé » | ☐ | |
 | 6.5 | EF-41 | RH | **Retour** | Statut « Terminée » ; l'heure de retour réelle figure dans la demande | ☐ | |
 | 6.6 | REC-10 | Agent | Télécharger le billet de sortie (PDF) | En-tête OMIT, référence `OMIT-BS-…`, zones de signature | ☐ | |
+
+## 6 bis. Règles de gestion de l'OMIT
+
+| # | Règle | Qui | Action | Résultat attendu | OK | Remarque |
+|---|---|---|---|---|---|---|
+| 6b.1 | R3 | Agent | Congé annuel du 24 au 31 décembre | « Jours décomptés : 7 j » : les week-ends comptent, Noël (férié) non | ☐ | |
+| 6b.2 | R8 | Agent | Congé annuel commençant dans 3 jours, sans cocher « Urgence » | Avertissement rouge dans le formulaire ; l'envoi est refusé (« au moins 15 jours à l'avance ») | ☐ | |
+| 6b.3 | R8 | Agent | Même demande, en cochant **Urgence** sans motif, puis avec un motif | Sans motif : refusée ; avec motif : envoyée, badge « Urgence » visible par les RH | ☐ | |
+| 6b.4 | R4 | Agent | Permission ou billet de sortie pendant un congé déjà envoyé | Refus : « Cette période chevauche la demande OMIT-CG-… (congé) » | ☐ | |
+| 6b.5 | R6 | Agent | Congé de maladie envoyé **sans** certificat | Envoi accepté ; la demande affiche « Justificatif attendu avant le … » (48 h après le premier jour) ; le bouton **Ajouter un justificatif** reste disponible | ☐ | |
+| 6b.6 | R6 | RH | Laisser passer le délai sans justificatif | L'agent et les RH reçoivent « Justificatif manquant » (une seule fois) ; la demande affiche « En retard » | ☐ | |
+| 6b.7 | R7 | Agent | Billet de sortie de 3 heures | Refus : « Une sortie dure au plus 2 h. » | ☐ | |
+| 6b.8 | R7 | Responsable du service | Faire sa propre demande de sortie | Elle n'apparaît pas dans sa file ; c'est le Médecin-Chef qui la valide | ☐ | |
+| 6b.9 | R5 | Responsable du service | Tenter d'annuler une sortie autorisée | Impossible ; seules les RH peuvent l'annuler, avant le départ | ☐ | |
 
 ## 7. Rapports, notifications, administration
 

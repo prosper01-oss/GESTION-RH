@@ -60,8 +60,8 @@ class LeaveDayCounter
             return $days->values()->all();
         }
 
-        $nonWorkingWeekdays = config('omit.non_working_days');
         $holidays = PublicHoliday::datesBetween($start, $end)->all();
+        $nonWorkingWeekdays = $mode === CountingMode::Ouvre ? config('omit.non_working_days') : [];
 
         return $days
             ->reject(fn (string $day): bool => in_array(CarbonImmutable::parse($day)->dayOfWeek, $nonWorkingWeekdays, true))

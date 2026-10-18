@@ -21,28 +21,37 @@ Le **tableau de bord** affiche votre fiche et votre solde disponible. Le solde e
 ## Faire une demande
 
 1. Menu **Mes demandes**, puis **+ Congé**, **+ Permission** ou **+ Billet de sortie**.
-2. Remplissez le formulaire. Pour un congé, le nombre de jours décomptés s'affiche tout seul, week-ends et jours fériés exclus si le type de congé le prévoit.
+2. Remplissez le formulaire. Pour un congé, le nombre de jours décomptés s'affiche tout seul. Pour le congé annuel, les samedis et dimanches comptent, les jours fériés non.
 3. Cliquez sur **Enregistrer le brouillon**. Le brouillon n'est visible que de vous.
 4. Ajoutez un justificatif si on vous le demande (PDF, JPG ou PNG, 5 Mo au maximum).
-5. Cliquez sur **Envoyer aux RH**.
+5. Cliquez sur **Envoyer aux RH** (pour un billet de sortie, la demande part à votre chef de service).
 
-La demande reçoit alors une référence, par exemple `OMIT-CG-2026-00125`. Vous ne pouvez plus la modifier, sauf si les RH vous la renvoient pour correction.
+La demande reçoit alors une référence, par exemple `OMIT-CG-2026-00125`. Vous ne pouvez plus la modifier, sauf si elle vous est renvoyée pour correction.
 
-L'envoi est refusé dans trois cas :
+L'envoi est refusé dans ces cas :
 
 - votre solde est insuffisant, en comptant vos autres demandes en attente ;
-- la période chevauche une autre de vos demandes ;
-- un justificatif obligatoire manque.
+- la période chevauche une autre de vos demandes, quel que soit son type (congé, permission ou sortie) ;
+- un justificatif obligatoire manque ;
+- un congé annuel est demandé **moins de 15 jours** avant son premier jour. En cas d'urgence, cochez **Urgence** et indiquez le motif : la demande est acceptée et signalée comme urgente.
+
+## Congé de maladie : justificatif sous 48 heures
+
+Vous pouvez envoyer la demande sans attendre le certificat. Ajoutez-le ensuite dans la demande, bouton **Ajouter un justificatif**, au plus tard **48 heures après le premier jour d'arrêt**. Passé ce délai, vous et les RH recevez une alerte, et les RH décident de la suite.
+
+## Billet de sortie : 2 heures au plus, validé par votre chef
+
+Une sortie pendant les heures de service dure **2 heures au plus**. Elle est validée par le **responsable de votre service** ; s'il n'y en a pas, ou si vous êtes vous-même le responsable, par le Médecin-Chef. Une fois validée, la sortie est autorisée : le billet est téléchargeable, et votre départ et votre retour sont enregistrés par les RH ou votre responsable.
 
 ## Suivre une demande
 
 | Statut | Signification |
 |---|---|
 | Brouillon | En préparation, visible de vous seul |
-| Soumise | Envoyée, en attente du contrôle des RH |
+| Soumise | Envoyée, en attente du contrôle des RH (ou de votre chef pour une sortie) |
 | À corriger | Les RH vous la renvoient : lisez leur commentaire, modifiez, renvoyez |
 | Transmise au Médecin-Chef | Contrôle RH terminé, en attente de décision |
-| Approuvée | Accordée ; pour un congé, les jours sont réservés sur votre solde |
+| Approuvée | Accordée ; pour un congé, les jours sont réservés sur votre solde ; pour une sortie, vous pouvez sortir |
 | Finalisée | Enregistrée par les RH ; le document est prêt |
 | Refusée | Le motif figure dans l'historique ; faites une nouvelle demande si besoin |
 | Terminée | Période passée ; pour un congé, les jours sont définitivement décomptés |

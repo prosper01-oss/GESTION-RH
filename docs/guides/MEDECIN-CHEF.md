@@ -21,6 +21,10 @@ Chaque consultation d'un justificatif médical est enregistrée dans le journal 
 
 Vous êtes prévenu de chaque nouvelle demande à décider par une alerte, un email et un SMS. Ces envois se règlent dans **Préférences de notification**.
 
+## Billets de sortie à valider
+
+Les billets de sortie (2 heures au plus) sont validés par le **responsable du service** de l'agent. Ils vous reviennent seulement quand le service n'a pas de responsable, ou quand c'est le responsable lui-même qui sort (règle R7). Ils apparaissent dans **À traiter**, onglet **Sorties à valider** : **Approuver**, **Refuser** ou **Renvoyer à l'agent pour correction**. Une fois approuvée, la sortie est autorisée, sans passer par les RH, qui sont simplement informées.
+
 ## Suppléance pendant vos absences
 
 1. Menu **Suppléances**.

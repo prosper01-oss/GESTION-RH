@@ -8,7 +8,7 @@ import { roleLabels } from '../services/labels';
 const navigation = [
     { to: '/', label: 'Tableau de bord', end: true },
     { to: '/demandes', label: 'Mes demandes', employeeOnly: true },
-    { to: '/a-traiter', label: 'À traiter', anyPermission: ['requests.review', 'requests.decide'] },
+    { to: '/a-traiter', label: 'À traiter', anyPermission: ['requests.review', 'requests.decide'], orExitApprover: true },
     { to: '/sorties', label: 'Sorties', permission: 'requests.review' },
     { to: '/rh/demandes', label: 'Demandes RH', permission: 'requests.review' },
     { to: '/rapports', label: 'Tableau de bord RH', permission: 'reports.view' },
@@ -31,7 +31,7 @@ export default function DashboardLayout() {
     const links = navigation.filter(
         (item) =>
             (!item.permission || can(item.permission)) &&
-            (!item.anyPermission || item.anyPermission.some((permission) => can(permission))) &&
+            (!item.anyPermission || item.anyPermission.some((permission) => can(permission)) || (item.orExitApprover && user.approves_exits)) &&
             (!item.employeeOnly || user.employee_id) &&
             (!item.anyRole || item.anyRole.some((role) => user.roles.includes(role)) || (item.orDelegate && (can('requests.review') || can('requests.decide')))),
     );

@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import Alert from '../../components/Alert';
 import Button from '../../components/Button';
+import EmployeePicker from '../../components/EmployeePicker';
 import Field from '../../components/Field';
 import { useAuth } from '../../hooks/useAuth';
 import api, { errorMessage, validationErrors } from '../../services/api';
 
-const emptyForm = { code: '', name: '' };
+const emptyForm = { code: '', name: '', manager: null };
 
 export default function DepartmentList() {
     const { can } = useAuth();
@@ -27,7 +28,7 @@ export default function DepartmentList() {
 
     function startEdit(department) {
         setEditingId(department.id);
-        setForm({ code: department.code, name: department.name });
+        setForm({ code: department.code, name: department.name, manager: department.manager ?? null });
         setErrors({});
     }
 
@@ -42,12 +43,13 @@ export default function DepartmentList() {
         setSubmitting(true);
         setErrors({});
         setMessage('');
+        const payload = { code: form.code, name: form.name, manager_employee_id: form.manager?.id ?? null };
 
         try {
             if (editingId) {
-                await api.put(`/departments/${editingId}`, form);
+                await api.put(`/departments/${editingId}`, payload);
             } else {
-                await api.post('/departments', form);
+                await api.post('/departments', payload);
             }
             reset();
             load();
@@ -75,6 +77,9 @@ export default function DepartmentList() {
                     </div>
                     <div className="flex-1">
                         <Field label="Nom du service" name="name" required value={form.name} onChange={update} error={errors.name} />
+                    </div>
+                    <div className="flex-1">
+                        <EmployeePicker label="Responsable (valide les sorties)" required={false} value={form.manager} onChange={(manager) => setForm({ ...form, manager })} error={errors.manager_employee_id} />
                     </div>
                     <div className="flex gap-2">
                         <Button type="submit" disabled={submitting}>

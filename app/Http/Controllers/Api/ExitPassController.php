@@ -42,7 +42,7 @@ class ExitPassController extends Controller
     public function recordDeparture(Request $request, EmployeeRequest $employeeRequest): JsonResponse
     {
         $this->ensureType($employeeRequest);
-        Gate::authorize('process', $employeeRequest);
+        Gate::authorize('recordExit', $employeeRequest);
 
         $validated = $request->validate(['actual_departure_at' => ['nullable', 'date', 'before_or_equal:now']]);
         $this->exitPasses->recordDeparture($employeeRequest, $validated['actual_departure_at'] ?? null);
@@ -56,7 +56,7 @@ class ExitPassController extends Controller
     public function recordReturn(Request $request, EmployeeRequest $employeeRequest): JsonResponse
     {
         $this->ensureType($employeeRequest);
-        Gate::authorize('process', $employeeRequest);
+        Gate::authorize('recordExit', $employeeRequest);
 
         $validated = $request->validate(['actual_return_at' => ['nullable', 'date', 'before_or_equal:now']]);
         $this->exitPasses->recordReturn($employeeRequest, $validated['actual_return_at'] ?? null, $request->user());

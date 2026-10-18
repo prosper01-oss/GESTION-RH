@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['code', 'name', 'is_paid', 'has_balance', 'requires_attachment', 'is_medical', 'allows_half_day', 'is_active'])]
+#[Fillable(['code', 'name', 'is_paid', 'has_balance', 'requires_attachment', 'is_medical', 'allows_half_day', 'min_notice_days', 'attachment_deadline_hours', 'is_active'])]
 class LeaveType extends Model
 {
     /** @use HasFactory<LeaveTypeFactory> */
@@ -31,6 +31,8 @@ class LeaveType extends Model
             'requires_attachment' => 'boolean',
             'is_medical' => 'boolean',
             'allows_half_day' => 'boolean',
+            'min_notice_days' => 'integer',
+            'attachment_deadline_hours' => 'integer',
             'is_active' => 'boolean',
         ];
     }

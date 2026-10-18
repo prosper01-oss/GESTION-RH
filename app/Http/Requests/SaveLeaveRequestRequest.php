@@ -33,6 +33,7 @@ class SaveLeaveRequestRequest extends FormRequest
             'end_date' => ['required', 'date', 'after_or_equal:start_date', 'before_or_equal:'.now()->addYears(2)->toDateString()],
             'starts_afternoon' => ['boolean'],
             'ends_morning' => ['boolean'],
+            'is_urgent' => ['boolean'],
             'reason' => ['nullable', 'string', 'max:1000'],
         ];
     }

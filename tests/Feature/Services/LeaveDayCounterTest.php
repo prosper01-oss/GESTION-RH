@@ -51,6 +51,15 @@ class LeaveDayCounterTest extends TestCase
         $this->assertSame(3.0, $days);
     }
 
+    public function test_calendar_days_excluding_holidays_count_weekends_but_not_holidays(): void
+    {
+        PublicHoliday::factory()->create(['date' => '2026-10-07']);
+
+        $days = (new LeaveDayCounter)->count(CountingMode::CalendaireHorsFeries, CarbonImmutable::parse('2026-10-05'), CarbonImmutable::parse('2026-10-11'));
+
+        $this->assertSame(6.0, $days);
+    }
+
     public function test_calendar_days_include_public_holidays(): void
     {
         PublicHoliday::factory()->create(['date' => '2026-10-07']);

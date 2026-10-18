@@ -41,6 +41,7 @@ export const accrualRuleLabels = {
 
 export const countingModeLabels = {
     calendar: 'Jours calendaires',
+    calendar_excluding_holidays: 'Jours calendaires hors jours fériés',
     working: 'Jours ouvrés',
 };
 

@@ -19,3 +19,6 @@ Schedule::command('omit:remind-pending-requests')->weekdays()->at('07:30')->with
 
 // Sauvegarde quotidienne de la base et des fichiers privés (section 5).
 Schedule::command('omit:backup')->dailyAt('23:30')->withoutOverlapping();
+
+// R6 : justificatifs attendus et non fournis dans le délai (congé maladie : 48 h).
+Schedule::command('omit:check-missing-attachments')->hourly()->withoutOverlapping();

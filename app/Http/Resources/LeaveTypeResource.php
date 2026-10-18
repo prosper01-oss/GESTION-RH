@@ -27,6 +27,8 @@ class LeaveTypeResource extends JsonResource
             'requires_attachment' => $this->requires_attachment,
             'is_medical' => $this->is_medical,
             'allows_half_day' => $this->allows_half_day,
+            'min_notice_days' => $this->min_notice_days,
+            'attachment_deadline_hours' => $this->attachment_deadline_hours,
             'is_active' => $this->is_active,
             'policy' => LeavePolicyResource::make($this->whenLoaded('currentPolicy')),
             'policies' => LeavePolicyResource::collection($this->whenLoaded('policies')),

@@ -13,8 +13,10 @@ const emptyForm = {
     requires_attachment: false,
     is_medical: false,
     allows_half_day: false,
+    min_notice_days: 0,
+    attachment_deadline_hours: '',
     is_active: true,
-    policy: { accrual_rule: 'monthly', annual_entitlement: 30, counting_mode: 'calendar', carry_over_max: '', effective_from: '' },
+    policy: { accrual_rule: 'monthly', annual_entitlement: 30, counting_mode: 'calendar_excluding_holidays', carry_over_max: '', effective_from: '' },
 };
 
 const flags = [
@@ -62,6 +64,8 @@ export default function LeaveTypeSettings() {
         setMessage('');
         const payload = {
             ...form,
+            min_notice_days: form.min_notice_days === '' ? 0 : Number(form.min_notice_days),
+            attachment_deadline_hours: form.attachment_deadline_hours === '' || form.attachment_deadline_hours === null ? null : Number(form.attachment_deadline_hours),
             policy: { ...form.policy, carry_over_max: form.policy.carry_over_max === '' ? null : form.policy.carry_over_max, effective_from: form.policy.effective_from || null },
         };
         try {
@@ -109,6 +113,28 @@ export default function LeaveTypeSettings() {
                                 {label}
                             </label>
                         ))}
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <Field
+                            label="Délai de dépôt minimal (jours avant le 1er jour, hors urgence)"
+                            name="min_notice_days"
+                            type="number"
+                            min="0"
+                            value={form.min_notice_days ?? 0}
+                            onChange={(event) => setForm({ ...form, min_notice_days: event.target.value })}
+                            error={errors.min_notice_days}
+                        />
+                        {form.requires_attachment && (
+                            <Field
+                                label="Justificatif à fournir sous … heures après le 1er jour (vide = avant l'envoi)"
+                                name="attachment_deadline_hours"
+                                type="number"
+                                min="1"
+                                value={form.attachment_deadline_hours ?? ''}
+                                onChange={(event) => setForm({ ...form, attachment_deadline_hours: event.target.value })}
+                                error={errors.attachment_deadline_hours}
+                            />
+                        )}
                     </div>
                     <fieldset className="grid gap-4 rounded-md border border-slate-200 p-4 sm:grid-cols-2">
                         <legend className="px-1 text-sm font-medium">Règles</legend>

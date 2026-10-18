@@ -78,27 +78,6 @@ class LeaveRequestService
     }
 
     /**
-     * Refuse les périodes qui chevauchent une autre demande active de l'agent (EF-23).
-     */
-    public function ensureNoOverlap(EmployeeRequest $request): void
-    {
-        $detail = $request->leaveDetail;
-
-        $overlapping = EmployeeRequest::query()
-            ->join('leave_request_details', 'leave_request_details.request_id', '=', 'requests.id')
-            ->where('requests.employee_id', $request->employee_id)
-            ->where('requests.id', '!=', $request->id)
-            ->whereIn('requests.status', RequestStatus::occupyingPeriod())
-            ->whereDate('leave_request_details.start_date', '<=', $detail->end_date->toDateString())
-            ->whereDate('leave_request_details.end_date', '>=', $detail->start_date->toDateString())
-            ->value('requests.reference');
-
-        if ($overlapping !== null) {
-            throw ValidationException::withMessages(['start_date' => "Cette période chevauche la demande {$overlapping}."]);
-        }
-    }
-
-    /**
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
@@ -114,6 +93,7 @@ class LeaveRequestService
             'end_date' => $data['end_date'],
             'starts_afternoon' => $startsAfternoon,
             'ends_morning' => $endsMorning,
+            'is_urgent' => (bool) ($data['is_urgent'] ?? false),
             'requested_days' => $this->countDays($leaveType, $data['start_date'], $data['end_date'], $startsAfternoon, $endsMorning),
             'reason' => $data['reason'] ?? null,
         ];
