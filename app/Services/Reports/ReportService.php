@@ -159,7 +159,7 @@ class ReportService
 
         if ($detail = $request->permissionDetail) {
             return array_merge($row, [
-                'nature' => $detail->permissionType->name,
+                'nature' => $detail->categoryLabel(),
                 'start' => $detail->start_at->format('Y-m-d H:i'),
                 'end' => $detail->end_at->format('Y-m-d H:i'),
                 'hours' => (float) $detail->duration_hours,

@@ -60,6 +60,10 @@ class PermissionRequestService
             throw ValidationException::withMessages(['attachments' => 'Un justificatif est obligatoire pour cette catégorie de permission.']);
         }
 
+        if ($type->requires_details && trim((string) $detail->reason) === '') {
+            throw ValidationException::withMessages(['reason' => 'Précisez la nature de la permission.']);
+        }
+
         if ($type->max_duration_hours !== null && (float) $detail->duration_hours > (float) $type->max_duration_hours) {
             throw ValidationException::withMessages(['end_at' => sprintf(
                 'La durée dépasse le maximum autorisé pour cette catégorie (%s h).',

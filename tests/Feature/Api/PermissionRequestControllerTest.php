@@ -84,6 +84,41 @@ class PermissionRequestControllerTest extends TestCase
         $this->actingAs($agent)->postJson("/api/v1/requests/{$second}/submit")->assertUnprocessable()->assertJsonValidationErrors('start_at');
     }
 
+    public function test_other_category_requires_details_which_become_the_displayed_category(): void
+    {
+        $other = PermissionType::where('name', 'Autres (à préciser)')->sole();
+        $agent = User::factory()->forEmployee()->create();
+
+        $this->actingAs($agent)->postJson('/api/v1/permission-requests', ['reason' => ''] + $this->payload($other))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['reason' => 'Précisez la nature de la permission.']);
+
+        $id = $this->actingAs($agent)->postJson('/api/v1/permission-requests', ['reason' => "Funérailles d'un proche"] + $this->payload($other))
+            ->assertCreated()
+            ->assertJsonPath('data.permission.permission_type.requires_details', true)
+            ->assertJsonPath('data.permission.category_label', "Autres : Funérailles d'un proche")
+            ->json('data.id');
+        $this->actingAs($agent)->postJson("/api/v1/requests/{$id}/submit")->assertOk();
+    }
+
+    public function test_categories_to_specify_come_last_in_the_list(): void
+    {
+        PermissionType::factory()->create(['name' => 'Mariage Salarié']);
+
+        $names = $this->actingAs(User::factory()->forEmployee()->create())->getJson('/api/v1/permission-types')->assertOk()->json('data.*.name');
+
+        $this->assertSame('Autres (à préciser)', end($names));
+    }
+
+    public function test_regular_category_keeps_the_reason_optional(): void
+    {
+        $type = PermissionType::factory()->create(['name' => 'Rendez-vous médical']);
+
+        $this->actingAs(User::factory()->forEmployee()->create())->postJson('/api/v1/permission-requests', ['reason' => ''] + $this->payload($type))
+            ->assertCreated()
+            ->assertJsonPath('data.permission.category_label', 'Rendez-vous médical');
+    }
+
     public function test_end_before_start_returns_422(): void
     {
         $type = PermissionType::factory()->create();

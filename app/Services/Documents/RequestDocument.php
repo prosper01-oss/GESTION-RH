@@ -69,7 +69,7 @@ class RequestDocument
 
         if ($detail = $request->permissionDetail) {
             $rows += [
-                'Catégorie' => $detail->permissionType->name.($detail->permissionType->is_paid ? '' : ' (non rémunérée)'),
+                'Catégorie' => $detail->categoryLabel().($detail->permissionType->is_paid ? '' : ' (non rémunérée)'),
                 'Du' => $detail->start_at->format('d/m/Y à H:i'),
                 'Au' => $detail->end_at->format('d/m/Y à H:i'),
                 'Durée' => $this->number((float) $detail->duration_hours).' h',

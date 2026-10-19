@@ -98,7 +98,17 @@ export default function PermissionRHForm() {
                 <Field label="Début" name="start_at" type="datetime-local" required value={form.start_at} onChange={update} error={errors.start_at} />
                 <Field label="Fin" name="end_at" type="datetime-local" required min={form.start_at || undefined} value={form.end_at} onChange={update} error={errors.end_at} />
                 <div className="sm:col-span-2">
-                    <Field label="Motif (facultatif)" name="reason" as="textarea" rows={3} value={form.reason} onChange={update} error={errors.reason} />
+                    <Field
+                        label={selectedType?.requires_details ? 'Précisez la permission (obligatoire)' : 'Motif (facultatif)'}
+                        name="reason"
+                        as="textarea"
+                        rows={3}
+                        required={Boolean(selectedType?.requires_details)}
+                        placeholder={selectedType?.requires_details ? 'Ex. : funérailles d’un proche, démarche administrative…' : undefined}
+                        value={form.reason}
+                        onChange={update}
+                        error={errors.reason}
+                    />
                 </div>
             </section>
 

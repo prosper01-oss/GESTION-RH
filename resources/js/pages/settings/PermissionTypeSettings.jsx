@@ -5,12 +5,13 @@ import Field from '../../components/Field';
 import api, { errorMessage, validationErrors } from '../../services/api';
 import { formatHours } from '../../services/labels';
 
-const emptyForm = { name: '', is_paid: true, requires_attachment: false, is_medical: false, max_duration_hours: '', is_active: true };
+const emptyForm = { name: '', is_paid: true, requires_attachment: false, is_medical: false, max_duration_hours: '', requires_details: false, is_active: true };
 
 const flags = [
     ['is_paid', 'Rémunérée'],
     ['requires_attachment', 'Justificatif obligatoire'],
     ['is_medical', 'Justificatif médical (accès restreint)'],
+    ['requires_details', 'Précision obligatoire (ex. « Autres »)'],
     ['is_active', 'Active'],
 ];
 
@@ -67,7 +68,7 @@ export default function PermissionTypeSettings() {
                         </div>
                         <Field label="Durée maximale en heures (vide = sans limite)" name="max_duration_hours" type="number" step="0.5" min="0.5" value={form.max_duration_hours ?? ''} onChange={(e) => setForm({ ...form, max_duration_hours: e.target.value })} error={errors.max_duration_hours} />
                     </div>
-                    <div className="grid gap-2 sm:grid-cols-4">
+                    <div className="grid gap-2 sm:grid-cols-3">
                         {flags.map(([name, label]) => (
                             <label key={name} className="flex items-center gap-2 text-sm">
                                 <input type="checkbox" checked={form[name]} onChange={(e) => setForm({ ...form, [name]: e.target.checked })} />
@@ -95,6 +96,7 @@ export default function PermissionTypeSettings() {
                                 {type.max_duration_hours ? ` · ${formatHours(type.max_duration_hours)} max.` : ''}
                                 {type.requires_attachment ? ' · justificatif obligatoire' : ''}
                                 {type.is_medical ? ' · médical' : ''}
+                                {type.requires_details ? ' · précision obligatoire' : ''}
                                 {!type.is_active ? ' · inactive' : ''}
                             </p>
                         </div>

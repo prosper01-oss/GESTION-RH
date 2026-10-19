@@ -37,7 +37,7 @@ class PermissionTypeController extends Controller
     {
         Gate::authorize(PermissionName::ManageLeaveSettings->value);
 
-        $old = $permissionType->only(['name', 'is_paid', 'requires_attachment', 'is_medical', 'max_duration_hours', 'is_active']);
+        $old = $permissionType->only(['name', 'is_paid', 'requires_attachment', 'is_medical', 'max_duration_hours', 'requires_details', 'is_active']);
         $permissionType->update($this->validated($request, $permissionType));
         AuditLog::record('permission_type.updated', $permissionType, $old, $permissionType->only(array_keys($old)));
 
@@ -55,6 +55,7 @@ class PermissionTypeController extends Controller
             'requires_attachment' => ['required', 'boolean'],
             'is_medical' => ['required', 'boolean'],
             'max_duration_hours' => ['nullable', 'numeric', 'min:0.5', 'max:2000'],
+            'requires_details' => ['sometimes', 'boolean'],
             'is_active' => ['required', 'boolean'],
         ]);
     }

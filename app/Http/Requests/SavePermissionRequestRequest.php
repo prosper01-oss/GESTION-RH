@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Models\PermissionType;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 /**
  * Saisie d'une permission ; la durée est calculée par le serveur.
@@ -43,6 +45,27 @@ class SavePermissionRequestRequest extends FormRequest
         return [
             'permission_type_id.exists' => "Cette catégorie de permission n'est pas proposée.",
             'end_at.after' => 'La fin doit suivre le début.',
+        ];
+    }
+
+    /**
+     * Catégorie « à préciser » (par exemple « Autres ») : la précision est obligatoire.
+     *
+     * @return array<int, callable>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                if ($validator->errors()->has('permission_type_id')) {
+                    return;
+                }
+
+                $type = PermissionType::find($this->input('permission_type_id'));
+                if ($type?->requires_details && trim((string) $this->input('reason')) === '') {
+                    $validator->errors()->add('reason', 'Précisez la nature de la permission.');
+                }
+            },
         ];
     }
 }

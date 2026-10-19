@@ -88,7 +88,13 @@ class EmployeeRequestResource extends JsonResource
                     && $this->relationLoaded('attachments') && $this->attachments->isEmpty(),
             ]),
             'permission' => $this->when($this->relationLoaded('permissionDetail') && $this->permissionDetail !== null, fn () => [
-                'permission_type' => ['id' => $this->permissionDetail->permissionType->id, 'name' => $this->permissionDetail->permissionType->name, 'requires_attachment' => $this->permissionDetail->permissionType->requires_attachment],
+                'permission_type' => [
+                    'id' => $this->permissionDetail->permissionType->id,
+                    'name' => $this->permissionDetail->permissionType->name,
+                    'requires_attachment' => $this->permissionDetail->permissionType->requires_attachment,
+                    'requires_details' => $this->permissionDetail->permissionType->requires_details,
+                ],
+                'category_label' => $this->permissionDetail->categoryLabel(),
                 'start_at' => $this->permissionDetail->start_at,
                 'end_at' => $this->permissionDetail->end_at,
                 'duration_hours' => (float) $this->permissionDetail->duration_hours,

@@ -17,7 +17,7 @@ class LeaveSettingsSeederTest extends TestCase
 
         $this->assertDatabaseCount('leave_types', 3);
         $this->assertDatabaseCount('leave_policies', 3);
-        $this->assertDatabaseCount('permission_types', 3);
+        $this->assertDatabaseCount('permission_types', 4);
         $this->assertDatabaseCount('public_holidays', 8);
     }
 }

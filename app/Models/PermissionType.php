@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'is_paid', 'requires_attachment', 'is_medical', 'max_duration_hours', 'is_active'])]
+#[Fillable(['name', 'is_paid', 'requires_attachment', 'is_medical', 'max_duration_hours', 'requires_details', 'is_active'])]
 class PermissionType extends Model
 {
     /** @use HasFactory<PermissionTypeFactory> */
@@ -27,6 +27,7 @@ class PermissionType extends Model
             'requires_attachment' => 'boolean',
             'is_medical' => 'boolean',
             'max_duration_hours' => 'decimal:2',
+            'requires_details' => 'boolean',
             'is_active' => 'boolean',
         ];
     }

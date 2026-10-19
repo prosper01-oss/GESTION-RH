@@ -39,6 +39,10 @@ L'envoi est refusé dans ces cas :
 - un justificatif obligatoire manque ;
 - un congé annuel est demandé **moins de 15 jours** avant son premier jour. En cas d'urgence, cochez **Urgence** et indiquez le motif : la demande est acceptée et signalée comme urgente.
 
+## Permission : catégorie « Autres (à préciser) »
+
+Si votre situation ne figure pas dans la liste des catégories de permission, choisissez **Autres (à préciser)** en bas de la liste, puis décrivez votre besoin dans le champ **Précisez la permission**, qui devient obligatoire. Cette précision s'affiche comme catégorie dans votre demande, sur l'autorisation et dans les rapports (par exemple « Autres : démarche administrative »).
+
 ## Congé de maladie : justificatif sous 48 heures
 
 Vous pouvez envoyer la demande sans attendre le certificat. Ajoutez-le ensuite dans la demande, bouton **Ajouter un justificatif**, au plus tard **48 heures après le premier jour d'arrêt**. Passé ce délai, vous et les RH recevez une alerte, et les RH décident de la suite.

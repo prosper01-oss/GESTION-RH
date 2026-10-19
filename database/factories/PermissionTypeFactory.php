@@ -23,6 +23,7 @@ class PermissionTypeFactory extends Factory
             'requires_attachment' => false,
             'is_medical' => false,
             'max_duration_hours' => null,
+            'requires_details' => false,
             'is_active' => true,
         ];
     }

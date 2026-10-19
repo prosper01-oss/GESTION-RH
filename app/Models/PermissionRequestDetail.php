@@ -30,6 +30,22 @@ class PermissionRequestDetail extends Model
     }
 
     /**
+     * Libellé de la catégorie ; pour une catégorie « à préciser », la précision de l'agent
+     * remplace la mention entre parenthèses (« Autres : funérailles d'un proche »).
+     */
+    public function categoryLabel(): string
+    {
+        $type = $this->permissionType;
+        $details = trim((string) $this->reason);
+
+        if (! $type->requires_details || $details === '') {
+            return $type->name;
+        }
+
+        return trim((string) preg_replace('/\s*\(.*\)\s*$/u', '', $type->name)).' : '.$details;
+    }
+
+    /**
      * @return BelongsTo<PermissionType, $this>
      */
     public function permissionType(): BelongsTo

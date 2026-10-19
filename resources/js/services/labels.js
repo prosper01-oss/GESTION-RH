@@ -85,7 +85,7 @@ export function requestSummary(request) {
     }
     if (request.permission) {
         return {
-            title: request.permission.permission_type.name,
+            title: request.permission.category_label ?? request.permission.permission_type.name,
             period: `${formatDateTime(request.permission.start_at)} → ${formatDateTime(request.permission.end_at)}`,
             quantity: formatHours(request.permission.duration_hours),
         };

@@ -50,6 +50,7 @@ class LeaveSettingsSeeder extends Seeder
             ['name' => 'Événement familial (mariage, naissance, décès)', 'is_paid' => true, 'requires_attachment' => true, 'max_duration_hours' => 72],
             ['name' => 'Rendez-vous médical', 'is_paid' => true, 'requires_attachment' => true, 'is_medical' => true, 'max_duration_hours' => 8],
             ['name' => 'Convenance personnelle', 'is_paid' => false, 'max_duration_hours' => 8],
+            ['name' => 'Autres (à préciser)', 'is_paid' => true, 'requires_details' => true],
         ];
 
         foreach ($permissionTypes as $permissionType) {

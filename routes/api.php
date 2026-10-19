@@ -95,7 +95,7 @@ Route::middleware(['auth:sanctum', EnsureAccountIsUsable::class])->group(functio
     Route::post('/leave-requests/{employeeRequest}/interrupt', [RequestTransitionController::class, 'interrupt'])->name('leave-requests.interrupt');
     Route::post('/leave-requests/{employeeRequest}/attachments', [RequestAttachmentController::class, 'store'])->name('leave-requests.attachments.store');
 
-    Route::get('/permission-types', fn () => response()->json(['data' => PermissionType::query()->active()->orderBy('name')->get()]))->name('permission-types.index');
+    Route::get('/permission-types', fn () => response()->json(['data' => PermissionType::query()->active()->orderBy('requires_details')->orderBy('name')->get()]))->name('permission-types.index');
     Route::get('/permission-requests', [RequestController::class, 'index'])->defaults('type', 'permission')->name('permission-requests.index');
     Route::post('/permission-requests', [PermissionRequestController::class, 'store'])->name('permission-requests.store');
     Route::put('/permission-requests/{employeeRequest}', [PermissionRequestController::class, 'update'])->name('permission-requests.update');
