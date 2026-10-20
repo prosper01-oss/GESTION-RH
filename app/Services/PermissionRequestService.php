@@ -16,6 +16,8 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
  */
 class PermissionRequestService
 {
+    public function __construct(private PermissionQuota $quota) {}
+
     /**
      * @param  array{permission_type_id: int, start_at: string, end_at: string, reason?: ?string}  $data
      */
@@ -70,6 +72,40 @@ class PermissionRequestService
                 rtrim(rtrim(number_format((float) $type->max_duration_hours, 2, ',', ''), '0'), ','),
             )]);
         }
+
+        $this->checkAnnualQuota($request);
+    }
+
+    /**
+     * Quota annuel : les jours de l'année (demandes en cours ou accordées) ne dépassent pas le droit annuel.
+     */
+    private function checkAnnualQuota(EmployeeRequest $request): void
+    {
+        $annualDays = $this->quota->annualDays();
+        if ($annualDays <= 0) {
+            return;
+        }
+
+        $detail = $request->permissionDetail;
+
+        foreach ($this->quota->daysByYear($detail->start_at, $detail->end_at) as $year => $days) {
+            $remaining = max(0, $annualDays - $this->quota->usedDays($request->employee, $year, $request->id));
+
+            if ($days > $remaining) {
+                throw ValidationException::withMessages(['end_at' => sprintf(
+                    'Quota de permissions %d dépassé : cette demande compte %s j, il reste %s j sur %s j.',
+                    $year,
+                    $this->formatDays($days),
+                    $this->formatDays($remaining),
+                    $this->formatDays($annualDays),
+                )]);
+            }
+        }
+    }
+
+    private function formatDays(float $days): string
+    {
+        return rtrim(rtrim(number_format($days, 1, ',', ''), '0'), ',');
     }
 
     /**

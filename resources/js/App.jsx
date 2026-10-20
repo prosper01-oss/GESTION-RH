@@ -8,6 +8,7 @@ import UserList from './pages/admin/UserList';
 import ApprovalQueue from './pages/approvals/ApprovalQueue';
 import ChangePassword from './pages/auth/ChangePassword';
 import Login from './pages/auth/Login';
+import MySignature from './pages/auth/MySignature';
 import NotificationPreferences from './pages/auth/NotificationPreferences';
 import Dashboard from './pages/dashboard/Dashboard';
 import DepartmentList from './pages/departments/DepartmentList';
@@ -55,6 +56,7 @@ export default function App() {
                     <Route path="/a-traiter" element={<ApprovalQueue />} />
                     <Route path="/suppleances" element={<DelegationList />} />
                     <Route path="/preferences" element={<NotificationPreferences />} />
+                    <Route path="/signature" element={<MySignature />} />
                     <Route element={<RequireAuth permission="requests.review" />}>
                         <Route path="/sorties" element={<ExitPassFollowUp />} />
                         <Route path="/rh/demandes" element={<DemandesRH />} />

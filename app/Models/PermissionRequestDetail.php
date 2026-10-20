@@ -46,6 +46,14 @@ class PermissionRequestDetail extends Model
     }
 
     /**
+     * @return BelongsTo<EmployeeRequest, $this>
+     */
+    public function request(): BelongsTo
+    {
+        return $this->belongsTo(EmployeeRequest::class, 'request_id');
+    }
+
+    /**
      * @return BelongsTo<PermissionType, $this>
      */
     public function permissionType(): BelongsTo

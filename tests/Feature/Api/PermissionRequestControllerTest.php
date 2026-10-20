@@ -73,6 +73,20 @@ class PermissionRequestControllerTest extends TestCase
         $this->assertDatabaseHas('request_attachments', ['request_id' => $id, 'is_medical' => true]);
     }
 
+    public function test_hr_attaches_the_required_document_to_a_permission_filed_for_an_agent(): void
+    {
+        Storage::fake();
+        $type = PermissionType::factory()->create(['requires_attachment' => true]);
+        $agent = User::factory()->forEmployee()->create();
+        $rh = $this->rh();
+        $id = $this->actingAs($rh)->postJson('/api/v1/permission-requests', ['employee_id' => $agent->employee->id] + $this->payload($type))->json('data.id');
+
+        $this->actingAs($rh)->postJson("/api/v1/requests/{$id}/attachments", ['file' => UploadedFile::fake()->create('acte.pdf', 50, 'application/pdf')])->assertCreated();
+        $this->actingAs($rh)->postJson("/api/v1/requests/{$id}/submit")->assertOk();
+
+        $this->actingAs($rh)->postJson("/api/v1/requests/{$id}/attachments", ['file' => UploadedFile::fake()->create('autre.pdf', 50, 'application/pdf')])->assertForbidden();
+    }
+
     public function test_overlapping_permission_returns_422(): void
     {
         $type = PermissionType::factory()->create();
@@ -127,6 +141,91 @@ class PermissionRequestControllerTest extends TestCase
             ->postJson('/api/v1/permission-requests', $this->payload($type, '11:00', '09:00'))
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['end_at' => 'La fin doit suivre le début.']);
+    }
+
+    public function test_each_date_counts_a_half_day_under_four_hours_and_a_full_day_otherwise(): void
+    {
+        $type = PermissionType::factory()->create();
+        $agent = User::factory()->forEmployee()->create();
+
+        $this->actingAs($agent)->postJson('/api/v1/permission-requests', $this->payload($type, '08:00', '11:30'))
+            ->assertJsonPath('data.permission.counted_days', 0.5);
+        $this->actingAs($agent)->postJson('/api/v1/permission-requests', $this->payload($type, '08:00', '12:00'))
+            ->assertJsonPath('data.permission.counted_days', 1);
+
+        $start = now()->addDays(2)->toDateString();
+        $end = now()->addDays(4)->toDateString();
+        $this->actingAs($agent)->postJson('/api/v1/permission-requests', ['permission_type_id' => $type->id, 'start_at' => "{$start} 08:00", 'end_at' => "{$end} 10:00"])
+            ->assertJsonPath('data.permission.counted_days', 2.5);
+    }
+
+    public function test_submission_beyond_the_annual_quota_returns_422(): void
+    {
+        config(['omit.permission_annual_days' => 1]);
+        $this->travelTo('2026-03-02 09:00');
+        $type = PermissionType::factory()->create();
+        $agent = User::factory()->forEmployee()->create();
+        $first = $this->actingAs($agent)->postJson('/api/v1/permission-requests', $this->payloadOn($type, '2026-03-04', '08:00', '12:00'))->json('data.id');
+        $second = $this->actingAs($agent)->postJson('/api/v1/permission-requests', $this->payloadOn($type, '2026-03-05', '08:00', '10:00'))->json('data.id');
+
+        $this->actingAs($agent)->postJson("/api/v1/requests/{$first}/submit")->assertOk();
+
+        $this->actingAs($agent)->postJson("/api/v1/requests/{$second}/submit")
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['end_at' => 'Quota de permissions 2026 dépassé : cette demande compte 0,5 j, il reste 0 j sur 1 j.']);
+    }
+
+    public function test_quota_starts_again_each_new_year_without_carry_over(): void
+    {
+        config(['omit.permission_annual_days' => 1]);
+        $this->travelTo('2026-12-20 09:00');
+        $type = PermissionType::factory()->create();
+        $agent = User::factory()->forEmployee()->create();
+        $december = $this->actingAs($agent)->postJson('/api/v1/permission-requests', $this->payloadOn($type, '2026-12-22', '08:00', '12:00'))->json('data.id');
+        $january = $this->actingAs($agent)->postJson('/api/v1/permission-requests', $this->payloadOn($type, '2027-01-05', '08:00', '12:00'))->json('data.id');
+
+        $this->actingAs($agent)->postJson("/api/v1/requests/{$december}/submit")->assertOk();
+        $this->actingAs($agent)->postJson("/api/v1/requests/{$january}/submit")->assertOk();
+
+        $this->actingAs($agent)->getJson('/api/v1/permission-quota/me?year=2026')
+            ->assertOk()
+            ->assertJson(['data' => ['year' => 2026, 'entitlement' => 1, 'used' => 1, 'remaining' => 0]]);
+        $this->actingAs($agent)->getJson('/api/v1/permission-quota/me?year=2028')
+            ->assertJson(['data' => ['year' => 2028, 'entitlement' => 1, 'used' => 0, 'remaining' => 1]]);
+    }
+
+    public function test_drafts_and_cancelled_requests_do_not_use_the_quota(): void
+    {
+        $type = PermissionType::factory()->create();
+        $agent = User::factory()->forEmployee()->create();
+        $this->actingAs($agent)->postJson('/api/v1/permission-requests', $this->payload($type));
+        $id = $this->actingAs($agent)->postJson('/api/v1/permission-requests', $this->payload($type, '13:00', '17:00'))->json('data.id');
+        $this->actingAs($agent)->postJson("/api/v1/requests/{$id}/submit")->assertOk();
+        $this->actingAs($agent)->postJson("/api/v1/requests/{$id}/cancel")->assertOk();
+
+        $this->actingAs($agent)->getJson('/api/v1/permission-quota/me')
+            ->assertJson(['data' => ['entitlement' => 10, 'used' => 0, 'remaining' => 10]]);
+    }
+
+    public function test_an_agent_cannot_read_a_colleague_quota(): void
+    {
+        $colleague = User::factory()->forEmployee()->create();
+
+        $this->actingAs(User::factory()->forEmployee()->create())
+            ->getJson("/api/v1/permission-quota/{$colleague->employee->id}")
+            ->assertForbidden();
+        $this->actingAs($this->rh())
+            ->getJson("/api/v1/permission-quota/{$colleague->employee->id}")
+            ->assertOk()
+            ->assertJsonPath('data.remaining', 10);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function payloadOn(PermissionType $type, string $day, string $from, string $to): array
+    {
+        return ['permission_type_id' => $type->id, 'start_at' => "{$day} {$from}", 'end_at' => "{$day} {$to}"];
     }
 
     /**

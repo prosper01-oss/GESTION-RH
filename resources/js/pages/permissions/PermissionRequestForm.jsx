@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import Alert from '../../components/Alert';
 import Button from '../../components/Button';
 import Field from '../../components/Field';
+import PermissionQuota, { countPermissionDays } from '../../components/PermissionQuota';
 import api, { errorMessage, validationErrors } from '../../services/api';
 import { formatHours } from '../../services/labels';
 
@@ -61,8 +62,9 @@ export default function PermissionRequestForm() {
             const { data } = id ? await api.put(`/permission-requests/${id}`, form) : await api.post('/permission-requests', form);
             navigate(`/demandes/${data.data.id}`);
         } catch (error) {
-            setErrors(validationErrors(error));
-            setMessage(error.response?.status === 422 ? 'Corrigez les champs signalés.' : errorMessage(error));
+            const fieldErrors = validationErrors(error);
+            setErrors(fieldErrors);
+            setMessage(Object.values(fieldErrors)[0] ?? errorMessage(error));
         } finally {
             setSubmitting(false);
         }
@@ -112,6 +114,8 @@ export default function PermissionRequestForm() {
                     />
                 </div>
             </section>
+
+            <PermissionQuota url="/permission-quota/me" requestedDays={hours > 0 ? countPermissionDays(form.start_at, form.end_at) : 0} />
 
             {hours > 0 && (
                 <p className="rounded-lg border border-sky-100 bg-sky-50 px-4 py-3 text-sm text-sky-900">

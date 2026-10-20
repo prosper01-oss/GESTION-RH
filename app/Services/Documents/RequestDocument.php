@@ -8,6 +8,7 @@ use App\Models\EmployeeRequest;
 use App\Models\LeaveRequestDetail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
@@ -27,14 +28,16 @@ class RequestDocument
             throw new ConflictHttpException("Le document n'est disponible qu'une fois la demande approuvée.");
         }
 
-        $request->load(['employee.department', 'history.actor', 'history.onBehalfOf', ...EmployeeRequest::detailRelations()]);
+        $request->load(['employee.department', 'history.actor.employee', 'history.onBehalfOf', ...EmployeeRequest::detailRelations()]);
         $title = match ($request->request_type) {
             RequestType::Conge => 'Autorisation de congé',
             RequestType::Permission => 'Autorisation de permission',
             RequestType::Sortie => 'Billet de sortie',
         };
 
-        return Pdf::loadView('pdf.request', ['request' => $request, 'title' => $title, 'rows' => $this->rows($request)])
+        $approverSignature = $this->approverSignature($request);
+
+        return Pdf::loadView('pdf.request', ['request' => $request, 'title' => $title, 'rows' => $this->rows($request), 'approverSignature' => $approverSignature])
             ->setPaper('a4')
             ->download("{$request->reference}.pdf");
     }
@@ -114,5 +117,24 @@ class RequestDocument
     private function number(float $value): string
     {
         return rtrim(rtrim(number_format($value, 2, ',', ' '), '0'), ',');
+    }
+
+    /**
+     * Signature base64 du médecin-chef ayant approuvé la demande, ou null si non disponible.
+     */
+    private function approverSignature(EmployeeRequest $request): ?string
+    {
+        $approval = $request->history
+            ->sortByDesc('id')
+            ->first(fn ($entry): bool => $entry->to_status === RequestStatus::Approuvee);
+
+        $path = $approval?->actor?->signature_path;
+        if ($path === null || ! Storage::disk('local')->exists($path)) {
+            return null;
+        }
+
+        $mime = Storage::disk('local')->mimeType($path) ?: 'image/png';
+
+        return 'data:'.$mime.';base64,'.base64_encode(Storage::disk('local')->get($path));
     }
 }

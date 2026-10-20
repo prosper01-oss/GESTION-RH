@@ -8,6 +8,7 @@ use App\Models\EmployeeRequest;
 use App\Models\RequestAttachment;
 use App\Models\RequestStatusHistory;
 use App\Services\LeaveBalanceService;
+use App\Services\PermissionQuota;
 use App\Services\RequestWorkflow;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -98,6 +99,7 @@ class EmployeeRequestResource extends JsonResource
                 'start_at' => $this->permissionDetail->start_at,
                 'end_at' => $this->permissionDetail->end_at,
                 'duration_hours' => (float) $this->permissionDetail->duration_hours,
+                'counted_days' => array_sum(app(PermissionQuota::class)->daysByYear($this->permissionDetail->start_at, $this->permissionDetail->end_at)),
                 'reason' => $this->permissionDetail->reason,
             ]),
             'exit_pass' => $this->when($this->relationLoaded('exitDetail') && $this->exitDetail !== null, fn () => [

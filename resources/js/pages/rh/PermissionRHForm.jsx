@@ -4,6 +4,7 @@ import Alert from '../../components/Alert';
 import Button from '../../components/Button';
 import EmployeePicker from '../../components/EmployeePicker';
 import Field from '../../components/Field';
+import PermissionQuota, { countPermissionDays } from '../../components/PermissionQuota';
 import api, { errorMessage, validationErrors } from '../../services/api';
 import { formatHours } from '../../services/labels';
 
@@ -21,6 +22,7 @@ function toLocalInput(value) {
 export default function PermissionRHForm() {
     const navigate = useNavigate();
     const [employee, setEmployee] = useState(null);
+    const [file, setFile] = useState(null);
     const [types, setTypes] = useState([]);
     const [form, setForm] = useState(emptyForm);
     const [errors, setErrors] = useState({});
@@ -49,11 +51,17 @@ export default function PermissionRHForm() {
         try {
             const { data } = await api.post('/permission-requests', { ...form, employee_id: employee.id });
             const requestId = data.data.id;
+            if (file) {
+                const body = new FormData();
+                body.append('file', file);
+                await api.post(`/requests/${requestId}/attachments`, body);
+            }
             await api.post(`/requests/${requestId}/submit`);
             navigate(`/demandes/${requestId}`);
         } catch (error) {
-            setErrors(validationErrors(error));
-            setMessage(error.response?.status === 422 ? 'Corrigez les champs signalés.' : errorMessage(error));
+            const fieldErrors = validationErrors(error);
+            setErrors(fieldErrors);
+            setMessage(Object.values(fieldErrors)[0] ?? errorMessage(error));
         } finally {
             setSubmitting(false);
         }
@@ -97,6 +105,23 @@ export default function PermissionRHForm() {
                 </div>
                 <Field label="Début" name="start_at" type="datetime-local" required value={form.start_at} onChange={update} error={errors.start_at} />
                 <Field label="Fin" name="end_at" type="datetime-local" required min={form.start_at || undefined} value={form.end_at} onChange={update} error={errors.end_at} />
+                {selectedType?.requires_attachment && (
+                    <div className="flex flex-col gap-1 sm:col-span-2">
+                        <label htmlFor="champ-file" className="text-sm font-medium text-slate-700">
+                            Justificatif (obligatoire)
+                        </label>
+                        <input
+                            id="champ-file"
+                            type="file"
+                            accept="application/pdf,image/jpeg,image/png"
+                            required
+                            className="text-sm"
+                            onChange={(event) => { setFile(event.target.files[0] ?? null); setErrors((prev) => ({ ...prev, file: undefined, attachments: undefined })); }}
+                        />
+                        <p className="text-xs text-slate-500">PDF, JPG ou PNG, 5 Mo au plus.</p>
+                        {(errors.file || errors.attachments) && <p className="text-sm text-red-600">{errors.file || errors.attachments}</p>}
+                    </div>
+                )}
                 <div className="sm:col-span-2">
                     <Field
                         label={selectedType?.requires_details ? 'Précisez la permission (obligatoire)' : 'Motif (facultatif)'}
@@ -111,6 +136,8 @@ export default function PermissionRHForm() {
                     />
                 </div>
             </section>
+
+            {employee && <PermissionQuota url={`/permission-quota/${employee.id}`} requestedDays={hours > 0 ? countPermissionDays(form.start_at, form.end_at) : 0} />}
 
             {hours > 0 && (
                 <p className="rounded-lg border border-sky-100 bg-sky-50 px-4 py-3 text-sm text-sky-900">

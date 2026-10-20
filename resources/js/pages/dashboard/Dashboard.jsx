@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Alert from '../../components/Alert';
 import EmployeeDetails from '../../components/EmployeeDetails';
 import LeaveBalances from '../../components/LeaveBalances';
+import PermissionQuota from '../../components/PermissionQuota';
 import { useAuth } from '../../hooks/useAuth';
 import api, { errorMessage } from '../../services/api';
 
@@ -52,6 +53,8 @@ export default function Dashboard() {
                     <LeaveBalances url="/leave-balances/me" />
                 </section>
             )}
+
+            {user.employee_id && <PermissionQuota url="/permission-quota/me" />}
 
             <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {shortcuts

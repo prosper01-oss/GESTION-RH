@@ -26,6 +26,8 @@ use App\Http\Controllers\Api\LeaveTypeController;
 use App\Http\Controllers\Api\MeController;
 use App\Http\Controllers\Api\MyNotificationController;
 use App\Http\Controllers\Api\MyPasswordController;
+use App\Http\Controllers\Api\MySignatureController;
+use App\Http\Controllers\Api\PermissionQuotaController;
 use App\Http\Controllers\Api\PermissionRequestController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\RequestAttachmentController;
@@ -51,6 +53,10 @@ Route::middleware(['auth:sanctum', EnsureAccountIsUsable::class])->group(functio
 
     Route::get('/me', [MeController::class, 'show'])->name('me.show');
     Route::patch('/me/password', [MyPasswordController::class, 'update'])->name('me.password.update');
+    Route::get('/me/signature', [MySignatureController::class, 'show'])->name('me.signature.show');
+    Route::get('/me/signature/image', [MySignatureController::class, 'image'])->name('me.signature.image');
+    Route::post('/me/signature', [MySignatureController::class, 'store'])->name('me.signature.store');
+    Route::delete('/me/signature', [MySignatureController::class, 'destroy'])->name('me.signature.destroy');
     Route::get('/me/notifications', [MyNotificationController::class, 'index'])->name('me.notifications.index');
     Route::patch('/me/notifications/{notification}/read', [MyNotificationController::class, 'markAsRead'])->name('me.notifications.read');
     Route::post('/me/notifications/read-all', [MyNotificationController::class, 'markAllAsRead'])->name('me.notifications.read-all');
@@ -96,6 +102,8 @@ Route::middleware(['auth:sanctum', EnsureAccountIsUsable::class])->group(functio
     Route::post('/leave-requests/{employeeRequest}/attachments', [RequestAttachmentController::class, 'store'])->name('leave-requests.attachments.store');
 
     Route::get('/permission-types', fn () => response()->json(['data' => PermissionType::query()->active()->orderBy('requires_details')->orderBy('name')->get()]))->name('permission-types.index');
+    Route::get('/permission-quota/me', [PermissionQuotaController::class, 'mine'])->name('permission-quota.mine');
+    Route::get('/permission-quota/{employee}', [PermissionQuotaController::class, 'show'])->name('permission-quota.show');
     Route::get('/permission-requests', [RequestController::class, 'index'])->defaults('type', 'permission')->name('permission-requests.index');
     Route::post('/permission-requests', [PermissionRequestController::class, 'store'])->name('permission-requests.store');
     Route::put('/permission-requests/{employeeRequest}', [PermissionRequestController::class, 'update'])->name('permission-requests.update');

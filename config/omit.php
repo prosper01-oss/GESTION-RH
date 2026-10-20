@@ -52,6 +52,31 @@ return [
 
     'exit_pass_max_hours' => (float) env('OMIT_EXIT_PASS_MAX_HOURS', 2),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Permissions : quota annuel
+    |--------------------------------------------------------------------------
+    |
+    | permission_annual_days : jours de permission par agent et par année
+    | civile, toutes catégories confondues. Le quota repart à zéro chaque
+    | 1er janvier, sans report du reliquat. 0 = illimité.
+    | permission_half_day_hours : en dessous de ce nombre d'heures sur une
+    | date, la permission compte une demi-journée ce jour-là, sinon une journée.
+    | workday : horaires de service, seules les heures comprises dans cette
+    | plage sont comptées sur chaque date (repli sur la durée réelle pour une
+    | permission entièrement hors de ces horaires).
+    |
+    */
+
+    'permission_annual_days' => (float) env('OMIT_PERMISSION_ANNUAL_DAYS', 10),
+
+    'permission_half_day_hours' => (float) env('OMIT_PERMISSION_HALF_DAY_HOURS', 4),
+
+    'workday' => [
+        'start' => env('OMIT_WORKDAY_START', '08:00'),
+        'end' => env('OMIT_WORKDAY_END', '17:00'),
+    ],
+
     'sms_gateway' => env('OMIT_SMS_GATEWAY', LogSmsGateway::class),
 
     /*

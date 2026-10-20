@@ -42,11 +42,12 @@ class EmployeeRequestPolicy
     /**
      * Ajout d'un justificatif : tant que la demande est modifiable, ou après l'envoi tant qu'un
      * justificatif est attendu dans un délai (R6) et que la demande n'est pas close.
+     * Les RH joignent le justificatif d'un brouillon qu'elles déposent au nom d'un agent.
      */
     public function addAttachment(User $user, EmployeeRequest $request): bool
     {
         if (! $request->isOwnedBy($user)) {
-            return false;
+            return $request->status === RequestStatus::Brouillon && $user->hasPermission(PermissionName::ReviewRequests);
         }
 
         if ($request->status->isEditableByOwner()) {

@@ -17,7 +17,12 @@
         <tr>
             <td>L'agent<div class="line">Signature</div></td>
             <td>Les Ressources Humaines<div class="line">Signature et cachet</div></td>
-            <td>Le Médecin-Chef<div class="line">Signature</div></td>
+            <td>Le Médecin-Chef
+                @if(!empty($approverSignature))
+                    <div style="margin-top:8px;"><img src="{{ $approverSignature }}" style="max-height:55px;max-width:130px;"></div>
+                @endif
+                <div class="line">Signature</div>
+            </td>
         </tr>
     </table>
 @endsection
