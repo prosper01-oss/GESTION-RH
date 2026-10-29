@@ -65,6 +65,16 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class);
     }
 
+    /**
+     * Modules Pharmacie accordés individuellement, en plus de ceux des rôles.
+     *
+     * @return BelongsToMany<Permission, $this>
+     */
+    public function directPermissions(): BelongsToMany
+    {
+        return $this->belongsToMany(Permission::class, 'permission_user');
+    }
+
     public function hasRole(RoleName $role): bool
     {
         return $this->roles->contains('name', $role->value);
@@ -134,8 +144,8 @@ class User extends Authenticatable
      */
     public function permissionNames(): Collection
     {
-        $this->loadMissing('roles.permissions');
+        $this->loadMissing('roles.permissions', 'directPermissions');
 
-        return $this->roles->flatMap->permissions->pluck('name')->unique()->values();
+        return $this->roles->flatMap->permissions->merge($this->directPermissions)->pluck('name')->unique()->values();
     }
 }

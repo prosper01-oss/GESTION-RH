@@ -26,7 +26,7 @@ class UserController extends Controller
         Gate::authorize(PermissionName::ManageUsers->value);
 
         $users = User::query()
-            ->with('roles.permissions')
+            ->with('roles.permissions', 'directPermissions')
             ->when($request->string('search')->toString(), fn ($query, string $search) => $query->where(
                 fn ($query) => $query->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%")
             ))

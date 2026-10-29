@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Alert from '../../components/Alert';
 import Button from '../../components/Button';
+import { DeleteButton } from '../../components/IconButton';
 import Field from '../../components/Field';
 import api, { errorMessage, validationErrors } from '../../services/api';
 
@@ -94,9 +95,7 @@ export default function PublicHolidaySettings() {
                                 {holiday.is_recurring && ' · chaque année'}
                             </p>
                         </div>
-                        <button type="button" className="text-red-600 hover:underline" onClick={() => remove(holiday)}>
-                            Supprimer
-                        </button>
+                        <DeleteButton onClick={() => remove(holiday)} label={`Supprimer ${holiday.label}`} />
                     </li>
                 ))}
             </ul>

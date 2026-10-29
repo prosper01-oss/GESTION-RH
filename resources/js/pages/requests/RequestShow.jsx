@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Alert from '../../components/Alert';
 import Button from '../../components/Button';
+import { DeleteButton, EditButton } from '../../components/IconButton';
 import Field from '../../components/Field';
 import RequestStatusBadge from '../../components/RequestStatusBadge';
 import api, { errorMessage, validationErrors } from '../../services/api';
@@ -300,9 +301,7 @@ export default function RequestShow() {
                             )}
                             {attachment.is_medical && <span className="rounded bg-rose-50 px-1.5 text-xs text-rose-700">médical</span>}
                             {request.can_edit && (
-                                <button type="button" className="text-xs text-red-600 hover:underline" onClick={() => removeAttachment(attachment)}>
-                                    Supprimer
-                                </button>
+                                <DeleteButton onClick={() => removeAttachment(attachment)} label={`Supprimer ${attachment.original_name}`} />
                             )}
                         </li>
                     ))}
@@ -331,9 +330,7 @@ export default function RequestShow() {
                     )}
                     <div className="flex flex-wrap gap-3">
                         {request.can_edit && (
-                            <Link to={`/demandes/${id}/modifier`} className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-                                Modifier
-                            </Link>
+                            <EditButton bordered to={`/demandes/${id}/modifier`} label="Modifier la demande" />
                         )}
                         {transitions.map((status) => (
                             <Button key={status} variant={actions[status].variant} disabled={busy} onClick={() => run(status)}>
@@ -356,9 +353,7 @@ export default function RequestShow() {
                             </Button>
                         )}
                         {request.can_delete && (
-                            <Button variant="secondary" onClick={removeDraft}>
-                                Supprimer le brouillon
-                            </Button>
+                            <DeleteButton bordered onClick={removeDraft} label="Supprimer le brouillon" />
                         )}
                     </div>
                     {request.can_interrupt && (

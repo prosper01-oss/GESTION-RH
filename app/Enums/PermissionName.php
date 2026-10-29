@@ -17,6 +17,18 @@ enum PermissionName: string
     case ViewMedicalAttachments = 'attachments.view_medical';
     case ViewReports = 'reports.view';
     case ManageBackups = 'backups.manage';
+    case PharmaDashboard = 'pharma.dashboard';
+    case PharmaGestion = 'pharma.gestion';
+    case PharmaArticles = 'pharma.articles';
+    case PharmaEntrees = 'pharma.entrees';
+    case PharmaSorties = 'pharma.sorties';
+    case PharmaMouvements = 'pharma.mouvements';
+    case PharmaInventaire = 'pharma.inventaire';
+    case PharmaReappro = 'pharma.reappro';
+    case PharmaCmm = 'pharma.cmm';
+    case PharmaCaisse = 'pharma.caisse';
+    case PharmaHistorique = 'pharma.historique';
+    case PharmaConsultations = 'pharma.consultations';
 
     public function description(): string
     {
@@ -34,6 +46,28 @@ enum PermissionName: string
             self::ViewMedicalAttachments => 'Consulter les justificatifs médicaux',
             self::ViewReports => 'Consulter le tableau de bord RH et exporter les rapports',
             self::ManageBackups => "Consulter l'état des sauvegardes et en lancer une",
+            self::PharmaDashboard => 'Pharmacie : consulter le tableau de bord',
+            self::PharmaGestion => 'Pharmacie : gérer les référentiels (analyses, échographies, catégories, services, personnel, kits)',
+            self::PharmaArticles => 'Pharmacie : gérer les articles et les fournisseurs',
+            self::PharmaEntrees => 'Pharmacie : enregistrer et valider les entrées de stock',
+            self::PharmaSorties => 'Pharmacie : enregistrer les sorties de stock (pertes, casse, ajustements)',
+            self::PharmaMouvements => 'Pharmacie : consulter le journal des mouvements de stock',
+            self::PharmaInventaire => 'Pharmacie : réaliser les inventaires',
+            self::PharmaReappro => 'Pharmacie : préparer le réapprovisionnement',
+            self::PharmaCmm => 'Pharmacie : consulter la consommation moyenne mensuelle',
+            self::PharmaCaisse => 'Pharmacie : tenir la caisse (sessions, paniers, ventes)',
+            self::PharmaHistorique => "Pharmacie : consulter l'historique des ventes",
+            self::PharmaConsultations => 'Pharmacie : recevoir les patients adressés par la caisse (médecin, dentiste)',
         };
+    }
+
+    /**
+     * Permissions des modules Pharmacie, attribuables individuellement à un compte.
+     *
+     * @return list<self>
+     */
+    public static function pharma(): array
+    {
+        return array_values(array_filter(self::cases(), fn (self $permission): bool => str_starts_with($permission->value, 'pharma.')));
     }
 }

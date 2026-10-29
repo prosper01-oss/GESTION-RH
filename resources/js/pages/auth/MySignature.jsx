@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Alert from '../../components/Alert';
-import Button from '../../components/Button';
+import { DeleteButton } from '../../components/IconButton';
 import api, { errorMessage } from '../../services/api';
 
 /**
@@ -102,9 +102,7 @@ export default function MySignature() {
                     />
                 </label>
                 {hasSignature && (
-                    <Button variant="danger" onClick={handleDelete} disabled={busy}>
-                        Supprimer
-                    </Button>
+                    <DeleteButton bordered onClick={handleDelete} disabled={busy} label="Supprimer ma signature" />
                 )}
             </div>
 

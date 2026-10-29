@@ -8,6 +8,10 @@ enum RoleName: string
     case RessourcesHumaines = 'rh';
     case MedecinChef = 'medecin_chef';
     case Administrateur = 'admin';
+    case Pharmacien = 'pharmacien';
+    case Caissier = 'caissier';
+    case Medecin = 'medecin';
+    case Dentiste = 'dentiste';
 
     public function label(): string
     {
@@ -16,6 +20,10 @@ enum RoleName: string
             self::RessourcesHumaines => 'Ressources Humaines',
             self::MedecinChef => 'Médecin-Chef',
             self::Administrateur => 'Administrateur informatique',
+            self::Pharmacien => 'Pharmacien',
+            self::Caissier => 'Caissier',
+            self::Medecin => 'Médecin',
+            self::Dentiste => 'Dentiste',
         };
     }
 
@@ -50,6 +58,35 @@ enum RoleName: string
                 PermissionName::ViewAuditLogs,
                 PermissionName::ManageLeaveSettings,
                 PermissionName::ManageBackups,
+                PermissionName::PharmaDashboard,
+                PermissionName::PharmaGestion,
+                PermissionName::PharmaArticles,
+                PermissionName::PharmaMouvements,
+                PermissionName::PharmaInventaire,
+                PermissionName::PharmaReappro,
+                PermissionName::PharmaCmm,
+                PermissionName::PharmaCaisse,
+                PermissionName::PharmaHistorique,
+                PermissionName::PharmaConsultations,
+            ],
+            self::Pharmacien => [
+                PermissionName::PharmaDashboard,
+                PermissionName::PharmaArticles,
+                PermissionName::PharmaEntrees,
+                PermissionName::PharmaSorties,
+                PermissionName::PharmaMouvements,
+                PermissionName::PharmaInventaire,
+                PermissionName::PharmaReappro,
+                PermissionName::PharmaCmm,
+                PermissionName::PharmaCaisse,
+            ],
+            self::Caissier => [
+                PermissionName::PharmaDashboard,
+                PermissionName::PharmaCaisse,
+                PermissionName::PharmaHistorique,
+            ],
+            self::Medecin, self::Dentiste => [
+                PermissionName::PharmaConsultations,
             ],
         };
     }

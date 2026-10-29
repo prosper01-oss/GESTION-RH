@@ -5,6 +5,7 @@ import Field from '../../components/Field';
 import Pagination from '../../components/Pagination';
 import api, { errorMessage, validationErrors } from '../../services/api';
 import { formatDate, roleLabels } from '../../services/labels';
+import { moduleLabels } from '../../services/pharma';
 
 const emptyForm = { name: '', email: '', matricule: '', roles: ['personnel'] };
 
@@ -29,6 +30,31 @@ function RoleCheckboxes({ value, onChange, error }) {
     );
 }
 
+function ModuleCheckboxes({ value, viaRoles, onChange }) {
+    function toggle(module) {
+        onChange(value.includes(module) ? value.filter((item) => item !== module) : [...value, module]);
+    }
+
+    return (
+        <fieldset className="flex flex-col gap-1">
+            <legend className="mb-1 text-sm font-medium text-slate-700">Modules Pharmacie</legend>
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+                {Object.entries(moduleLabels).map(([module, label]) => {
+                    const fromRole = viaRoles.includes(module);
+
+                    return (
+                        <label key={module} className="flex items-center gap-2 text-sm">
+                            <input type="checkbox" checked={fromRole || value.includes(module)} disabled={fromRole} onChange={() => toggle(module)} />
+                            {label}
+                            {fromRole && <span className="text-xs text-slate-500">(via un rôle)</span>}
+                        </label>
+                    );
+                })}
+            </div>
+        </fieldset>
+    );
+}
+
 export default function UserList() {
     const [users, setUsers] = useState([]);
     const [meta, setMeta] = useState(null);
@@ -39,6 +65,7 @@ export default function UserList() {
     const [message, setMessage] = useState('');
     const [temporary, setTemporary] = useState(null);
     const [editingRoles, setEditingRoles] = useState(null);
+    const [editingModules, setEditingModules] = useState(null);
 
     function load() {
         api.get('/admin/users', { params: { page } })
@@ -77,6 +104,17 @@ export default function UserList() {
             load();
         } catch (error) {
             setMessage(validationErrors(error).roles ?? errorMessage(error));
+        }
+    }
+
+    async function saveModules() {
+        setMessage('');
+        try {
+            await api.put(`/admin/users/${editingModules.id}/modules`, { modules: editingModules.modules });
+            setEditingModules(null);
+            load();
+        } catch (error) {
+            setMessage(errorMessage(error));
         }
     }
 
@@ -166,11 +204,32 @@ export default function UserList() {
                                     ) : (
                                         user.roles.map((role) => roleLabels[role] ?? role).join(', ')
                                     )}
+                                    {editingModules?.id === user.id && (
+                                        <div className="mt-3 flex flex-col gap-2">
+                                            <ModuleCheckboxes value={editingModules.modules} viaRoles={editingModules.viaRoles} onChange={(modules) => setEditingModules({ ...editingModules, modules })} />
+                                            <div className="flex gap-2">
+                                                <Button onClick={saveModules}>Enregistrer</Button>
+                                                <Button variant="secondary" onClick={() => setEditingModules(null)}>
+                                                    Annuler
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {editingModules?.id !== user.id && user.modules?.length > 0 && (
+                                        <p className="mt-1 text-xs text-slate-500">Modules Pharmacie en plus : {user.modules.map((module) => moduleLabels[module] ?? module).join(', ')}</p>
+                                    )}
                                 </td>
                                 <td className="px-4 py-3">{formatDate(user.last_login_at)}</td>
                                 <td className="px-4 py-3 text-right whitespace-nowrap">
                                     <button type="button" className="mr-4 text-sky-700 hover:underline" onClick={() => setEditingRoles({ id: user.id, roles: user.roles })}>
                                         Rôles
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="mr-4 text-sky-700 hover:underline"
+                                        onClick={() => setEditingModules({ id: user.id, modules: user.modules ?? [], viaRoles: user.permissions.filter((permission) => permission.startsWith('pharma.') && !(user.modules ?? []).includes(permission)) })}
+                                    >
+                                        Modules Pharmacie
                                     </button>
                                     <button type="button" className="text-sky-700 hover:underline" onClick={() => resetPassword(user)}>
                                         Réinitialiser

@@ -28,6 +28,7 @@ class UserResource extends JsonResource
             'last_login_at' => $this->last_login_at,
             'employee_id' => $this->employee_id,
             'roles' => $this->whenLoaded('roles', fn () => $this->roles->pluck('name')),
+            'modules' => $this->whenLoaded('directPermissions', fn () => $this->directPermissions->pluck('name')),
             'permissions' => $this->when($this->relationLoaded('roles'), fn () => $this->effectivePermissionNames()),
             // R7 : responsable d'un service ou Médecin-Chef, il voit la file « Sorties à valider ».
             'approves_exits' => $this->when($this->relationLoaded('roles'), fn () => app(ExitPassApprover::class)->approvesExits($this->resource)),

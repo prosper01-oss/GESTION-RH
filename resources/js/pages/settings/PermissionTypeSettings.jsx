@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Alert from '../../components/Alert';
 import Button from '../../components/Button';
+import { EditButton } from '../../components/IconButton';
 import Field from '../../components/Field';
 import api, { errorMessage, validationErrors } from '../../services/api';
 import { formatHours } from '../../services/labels';
@@ -100,17 +101,14 @@ export default function PermissionTypeSettings() {
                                 {!type.is_active ? ' · inactive' : ''}
                             </p>
                         </div>
-                        <button
-                            type="button"
-                            className="text-sky-700 hover:underline"
+                        <EditButton
+                            label={`Modifier ${type.name}`}
                             onClick={() => {
                                 setEditingId(type.id);
                                 setErrors({});
                                 setForm({ ...type, max_duration_hours: type.max_duration_hours ?? '' });
                             }}
-                        >
-                            Modifier
-                        </button>
+                        />
                     </li>
                 ))}
             </ul>

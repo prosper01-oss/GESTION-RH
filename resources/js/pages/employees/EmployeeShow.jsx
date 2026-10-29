@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import Alert from '../../components/Alert';
 import BalanceAdjustmentForm from '../../components/BalanceAdjustmentForm';
 import Button from '../../components/Button';
+import { EditButton } from '../../components/IconButton';
 import EmployeeDetails from '../../components/EmployeeDetails';
 import LeaveBalances from '../../components/LeaveBalances';
 import { useAuth } from '../../hooks/useAuth';
@@ -94,9 +95,7 @@ export default function EmployeeShow() {
             </section>
             {can('employees.manage') && (
                 <div className="flex flex-wrap gap-3">
-                    <Link to={`/personnel/${id}/modifier`} className="rounded-md bg-ink px-4 py-2 text-sm font-medium text-gold-light ring-1 ring-gold/60 hover:bg-black hover:text-white">
-                        Modifier
-                    </Link>
+                    <EditButton bordered to={`/personnel/${id}/modifier`} label="Modifier la fiche" />
                     <label className={`cursor-pointer rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 ${busy ? 'pointer-events-none opacity-50' : ''}`}>
                         {employee.has_photo ? 'Changer la photo' : 'Ajouter une photo'}
                         <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={uploadPhoto} disabled={busy} />

@@ -18,6 +18,11 @@ const shortcuts = [
     { to: '/rapports', label: 'Tableau de bord RH', description: 'Indicateurs, absences et exports PDF / Excel', permission: 'reports.view' },
     { to: '/parametres/conges', label: 'Types de congés', description: 'Droits, décompte et report', permission: 'leave_settings.manage' },
     { to: '/parametres/jours-feries', label: 'Jours fériés', description: 'Calendrier des jours non travaillés', permission: 'leave_settings.manage' },
+    { to: '/pharmacie/consultations', label: 'Mes patients', description: 'Patients adressés par la caisse, en attente de consultation', permission: 'pharma.consultations' },
+    { to: '/pharmacie/caisse', label: 'Caisse', description: 'Encaisser les ventes de la pharmacie', permission: 'pharma.caisse' },
+    { to: '/pharmacie', label: 'Tableau de bord Pharmacie', description: "Chiffre d'affaires, stock critique et péremptions", permission: 'pharma.dashboard' },
+    { to: '/pharmacie/articles', label: 'Articles et stock', description: 'Médicaments, lots et fournisseurs', permission: 'pharma.articles' },
+    { to: '/pharmacie/entrees', label: 'Entrées de stock', description: 'Approvisionnements et validation des lots', permission: 'pharma.entrees' },
     { to: '/admin/comptes', label: 'Comptes', description: 'Créer les comptes et attribuer les rôles', permission: 'users.manage' },
     { to: '/admin/journal', label: "Journal d'audit", description: 'Connexions et actions sensibles', permission: 'audit_logs.view' },
 ];

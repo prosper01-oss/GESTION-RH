@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Admin\LeaveTypeController as AdminLeaveTypeControll
 use App\Http\Controllers\Api\Admin\PermissionTypeController;
 use App\Http\Controllers\Api\Admin\PublicHolidayController;
 use App\Http\Controllers\Api\Admin\UserController;
+use App\Http\Controllers\Api\Admin\UserModuleController;
 use App\Http\Controllers\Api\Admin\UserPasswordResetController;
 use App\Http\Controllers\Api\Admin\UserRoleController;
 use App\Http\Controllers\Api\ApprovalController;
@@ -137,6 +138,7 @@ Route::middleware(['auth:sanctum', EnsureAccountIsUsable::class])->group(functio
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::apiResource('users', UserController::class)->only(['index', 'store']);
         Route::patch('/users/{user}/roles', [UserRoleController::class, 'update'])->name('users.roles.update');
+        Route::put('/users/{user}/modules', [UserModuleController::class, 'update'])->name('users.modules.update');
         Route::post('/users/{user}/reset-password', [UserPasswordResetController::class, 'store'])->name('users.password.reset');
         Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
         Route::apiResource('leave-types', AdminLeaveTypeController::class)->only(['index', 'store', 'update']);
@@ -145,4 +147,6 @@ Route::middleware(['auth:sanctum', EnsureAccountIsUsable::class])->group(functio
         Route::get('/backups', [BackupController::class, 'index'])->name('backups.index');
         Route::post('/backups', [BackupController::class, 'store'])->middleware('throttle:3,10')->name('backups.store');
     });
+
+    Route::prefix('pharma')->name('pharma.')->group(base_path('routes/pharma.php'));
 });

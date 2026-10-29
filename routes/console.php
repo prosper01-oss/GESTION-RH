@@ -22,3 +22,6 @@ Schedule::command('omit:backup')->dailyAt('23:30')->withoutOverlapping();
 
 // R6 : justificatifs attendus et non fournis dans le délai (congé maladie : 48 h).
 Schedule::command('omit:check-missing-attachments')->hourly()->withoutOverlapping();
+
+// Pharmacie : stock réservé par les paniers de caisse abandonnés, restitué après PANIER_EXPIRATION_MINUTES.
+Schedule::command('omit:pharma-purger-paniers')->everyFiveMinutes()->withoutOverlapping();

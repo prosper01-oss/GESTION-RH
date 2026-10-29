@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Alert from '../../components/Alert';
 import Button from '../../components/Button';
+import { EditButton } from '../../components/IconButton';
 import Field from '../../components/Field';
 import api, { errorMessage, validationErrors } from '../../services/api';
 import { accrualRuleLabels, countingModeLabels, formatDate, formatDays } from '../../services/labels';
@@ -195,9 +196,7 @@ export default function LeaveTypeSettings() {
                                 <td className="px-4 py-3">{type.policy?.carry_over_max == null ? 'Illimité' : formatDays(type.policy.carry_over_max)}</td>
                                 <td className="px-4 py-3">{formatDate(type.policy?.effective_from)}</td>
                                 <td className="px-4 py-3 text-right">
-                                    <button type="button" className="text-sky-700 hover:underline" onClick={() => edit(type)}>
-                                        Modifier
-                                    </button>
+                                    <EditButton onClick={() => edit(type)} label={`Modifier ${type.name}`} />
                                 </td>
                             </tr>
                         ))}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Alert from '../../components/Alert';
 import Button from '../../components/Button';
+import { EditButton } from '../../components/IconButton';
 import EmployeePicker from '../../components/EmployeePicker';
 import Field from '../../components/Field';
 import { useAuth } from '../../hooks/useAuth';
@@ -121,9 +122,7 @@ export default function DepartmentList() {
                                 <td className="px-4 py-3 text-right">{department.employees_count}</td>
                                 {canManage && (
                                     <td className="px-4 py-3 text-right">
-                                        <button type="button" onClick={() => startEdit(department)} className="text-sky-700 hover:underline">
-                                            Modifier
-                                        </button>
+                                        <EditButton onClick={() => startEdit(department)} label={`Modifier ${department.name}`} />
                                     </td>
                                 )}
                             </tr>

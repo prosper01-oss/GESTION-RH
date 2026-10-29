@@ -1,25 +1,26 @@
 import { useTheme } from '../hooks/useTheme';
+import { MonitorIcon, MoonIcon, SunIcon } from './Icons';
 
-const labels = { light: 'Clair', dark: 'Sombre', system: 'Auto' };
-const icons = { light: '☀', dark: '☾', system: '◐' };
+const labels = { light: 'Clair', dark: 'Sombre', system: 'Automatique' };
+const icons = { light: SunIcon, dark: MoonIcon, system: MonitorIcon };
 
 /**
- * Bouton qui passe de Auto à Clair puis à Sombre.
+ * Bouton-icône qui passe de Auto à Clair puis à Sombre : soleil, lune ou écran selon le mode choisi.
  */
 export default function ThemeToggle({ className = '' }) {
     const { choice, cycle } = useTheme();
     const next = { system: 'clair', light: 'sombre', dark: 'automatique' }[choice];
+    const CurrentIcon = icons[choice];
 
     return (
         <button
             type="button"
             onClick={cycle}
-            title={`Thème : ${labels[choice]}. Cliquer pour passer en mode ${next}.`}
+            title={`Thème : ${labels[choice]} — passer en mode ${next}`}
             aria-label={`Thème ${labels[choice]}, passer en mode ${next}`}
-            className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm ${className}`}
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-gold focus-visible:outline-none ${className}`}
         >
-            <span aria-hidden="true">{icons[choice]}</span>
-            {labels[choice]}
+            <CurrentIcon />
         </button>
     );
 }

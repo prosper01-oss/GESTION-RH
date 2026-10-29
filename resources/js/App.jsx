@@ -20,6 +20,18 @@ import DelegationList from './pages/delegations/DelegationList';
 import ExitPassFollowUp from './pages/exits/ExitPassFollowUp';
 import ExitPassForm from './pages/exits/ExitPassForm';
 import LeaveRequestForm from './pages/leaves/LeaveRequestForm';
+import Articles from './pages/pharma/Articles';
+import Caisse from './pages/pharma/Caisse';
+import Consultations from './pages/pharma/Consultations';
+import Cmm from './pages/pharma/Cmm';
+import Entrees from './pages/pharma/Entrees';
+import Gestion from './pages/pharma/Gestion';
+import Historique from './pages/pharma/Historique';
+import Inventaire from './pages/pharma/Inventaire';
+import Mouvements from './pages/pharma/Mouvements';
+import PharmaDashboard from './pages/pharma/PharmaDashboard';
+import Reappro from './pages/pharma/Reappro';
+import Sorties from './pages/pharma/Sorties';
 import PermissionRequestForm from './pages/permissions/PermissionRequestForm';
 import RequestEdit from './pages/requests/RequestEdit';
 import RequestList from './pages/requests/RequestList';
@@ -86,6 +98,42 @@ export default function App() {
                     </Route>
                     <Route element={<RequireAuth permission="backups.manage" />}>
                         <Route path="/admin/sauvegardes" element={<BackupList />} />
+                    </Route>
+                    <Route element={<RequireAuth permission="pharma.dashboard" />}>
+                        <Route path="/pharmacie" element={<PharmaDashboard />} />
+                    </Route>
+                    <Route element={<RequireAuth permission="pharma.consultations" />}>
+                        <Route path="/pharmacie/consultations" element={<Consultations />} />
+                    </Route>
+                    <Route element={<RequireAuth permission="pharma.caisse" />}>
+                        <Route path="/pharmacie/caisse" element={<Caisse />} />
+                    </Route>
+                    <Route element={<RequireAuth permission="pharma.historique" />}>
+                        <Route path="/pharmacie/historique" element={<Historique />} />
+                    </Route>
+                    <Route element={<RequireAuth permission="pharma.gestion" />}>
+                        <Route path="/pharmacie/gestion" element={<Gestion />} />
+                    </Route>
+                    <Route element={<RequireAuth permission="pharma.articles" />}>
+                        <Route path="/pharmacie/articles" element={<Articles />} />
+                    </Route>
+                    <Route element={<RequireAuth permission="pharma.entrees" />}>
+                        <Route path="/pharmacie/entrees" element={<Entrees />} />
+                    </Route>
+                    <Route element={<RequireAuth permission="pharma.sorties" />}>
+                        <Route path="/pharmacie/sorties" element={<Sorties />} />
+                    </Route>
+                    <Route element={<RequireAuth permission="pharma.mouvements" />}>
+                        <Route path="/pharmacie/mouvements" element={<Mouvements />} />
+                    </Route>
+                    <Route element={<RequireAuth permission="pharma.inventaire" />}>
+                        <Route path="/pharmacie/inventaire" element={<Inventaire />} />
+                    </Route>
+                    <Route element={<RequireAuth permission="pharma.reappro" />}>
+                        <Route path="/pharmacie/reappro" element={<Reappro />} />
+                    </Route>
+                    <Route element={<RequireAuth permission="pharma.cmm" />}>
+                        <Route path="/pharmacie/cmm" element={<Cmm />} />
                     </Route>
                     <Route element={<RequireAuth permission="audit_logs.view" />}>
                         <Route path="/admin/journal" element={<AuditLogList />} />

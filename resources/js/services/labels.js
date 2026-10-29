@@ -3,6 +3,10 @@ export const roleLabels = {
     rh: 'Ressources Humaines',
     medecin_chef: 'Médecin-Chef',
     admin: 'Administrateur',
+    pharmacien: 'Pharmacien',
+    caissier: 'Caissier',
+    medecin: 'Médecin',
+    dentiste: 'Dentiste',
 };
 
 export const sexeLabels = {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { formatDateTime } from '../services/labels';
+import { BellIcon } from './Icons';
 
 /**
  * Alertes internes (EF-60) : compteur actualisé chaque minute, liste déroulante.
@@ -61,12 +62,17 @@ export default function NotificationBell() {
             <button
                 type="button"
                 onClick={() => setOpen((value) => !value)}
-                className="relative rounded-md px-2 py-1 text-sm text-stone-300 hover:bg-white/10 hover:text-gold-light"
+                className="relative inline-flex h-9 w-9 items-center justify-center rounded-full text-stone-300 transition-colors hover:bg-white/10 hover:text-gold-light focus-visible:ring-2 focus-visible:ring-gold focus-visible:outline-none"
+                title="Notifications"
                 aria-label={`Notifications${unread ? ` (${unread} non lues)` : ''}`}
                 aria-expanded={open}
             >
-                Notifications
-                {unread > 0 && <span className="ml-1 rounded-full bg-red-600 px-1.5 py-0.5 text-xs font-semibold text-white">{unread}</span>}
+                <BellIcon />
+                {unread > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] leading-none font-semibold text-white ring-2 ring-ink">
+                        {unread > 9 ? '9+' : unread}
+                    </span>
+                )}
             </button>
             {open && (
                 <div className="absolute right-0 z-20 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-slate-200 bg-white shadow-lg">
